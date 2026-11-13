@@ -26,6 +26,23 @@ export default function Resume() {
       router.replace('/b/connect');
       return;
     }
+    // C-06 trial emails: D0 opens the trial dashboard (C-04); D5 and D6 open C's connect flow (C-12).
+    const to = params.get('to');
+    // C-10 reactivation emails: every link opens the C-11 reactivation landing, which logs its own view.
+    if (to === 'c-reactivate') {
+      setFlow('c');
+      const id = params.get('email') || 'unknown';
+      track('email_clicked', { email_id: id });
+      router.replace(`/c/back?email=${encodeURIComponent(id)}`);
+      return;
+    }
+    if (to === 'c-connect' || to === 'c-dashboard') {
+      setFlow('c');
+      track('email_clicked', { email_id: params.get('email') || 'unknown' });
+      if (to === 'c-connect') track('exchange_connect_started', { source: 'trial_email' });
+      router.replace(to === 'c-connect' ? '/c/connect' : '/c/dashboard');
+      return;
+    }
     const step = Math.min(5, Math.max(0, Number(params.get('step')) || 0));
     const ex = exchangeById(params.get('exchange')) ?? exchangeById('bitunix')!;
     track('email_clicked', { email_id: params.get('email') || 'unknown', step, exchange: ex.id });

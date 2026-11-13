@@ -15,7 +15,7 @@ Open http://localhost:3200. Press **P** (or the "Prototype" pill) to open the na
 
 - **A · Guided**: `/` → signup → connect exchange → `/dashboard`
 - **B · Soft lock**: `/b` → signup → locked dashboard → connect → `/b/unlocked`
-- **C · Freemium**: planned
+- **C · Freemium 7 days**: `/c` → signup → trial welcome → trial dashboard (`?day=1–8`) → lock wall → reactivation → `/c/unlocked`
 
 ## Demo values
 

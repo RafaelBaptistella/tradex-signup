@@ -23,7 +23,7 @@ export default function Connected() {
   useEffect(() => {
     if (sent.current) return;
     sent.current = true;
-    track('exchange_connected', { exchange: ex.id, source: currentFlow() === 'b' ? 'softlock' : 'guided' });
+    track('exchange_connected', { exchange: ex.id, source: { a: 'guided', b: 'softlock', c: 'trial' }[currentFlow()] });
   }, [ex.id]);
 
   const unlocked = ['Cashback on every trade', 'Ranking: you start as a Rekrut', 'All courses, community and live trading'];
@@ -84,7 +84,7 @@ export default function Connected() {
         </div>
 
         <div className={s.welcomeFooter}>
-          <PrimaryButton onClick={() => router.push(currentFlow() === 'b' ? `/b/unlocked?exchange=${ex.id}` : `/dashboard?exchange=${ex.id}`)}>Open TradeX</PrimaryButton>
+          <PrimaryButton onClick={() => router.push(`${{ a: '/dashboard', b: '/b/unlocked', c: '/c/unlocked' }[currentFlow()]}?exchange=${ex.id}`)}>Open TradeX</PrimaryButton>
         </div>
       </div>
     </main>

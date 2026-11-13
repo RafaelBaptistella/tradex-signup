@@ -28,7 +28,8 @@ export default function ChooseExchange() {
   const [sheet, setSheet] = useState<null | 'ask' | 'fresh'>(null);
   const [videoOpen, setVideoOpen] = useState(false);
   const viewed = useRef(false);
-  const [inB, setInB] = useState(false);
+  // In flows B and C people are already inside TradeX: no 6-step signup header, and Back returns to where they came from.
+  const [inApp, setInApp] = useState<null | 'b' | 'c'>(null);
 
   useEffect(() => {
     if (viewed.current) return;
@@ -36,9 +37,10 @@ export default function ChooseExchange() {
     const r = recommend(readProfile());
     setPick(r); setSelected(r.id);
     track('signup_step_viewed', P);
-    // In flow B the connect started on the B-03 modal; A-07 only logs the view there.
-    if (currentFlow() !== 'b') track('exchange_connect_started', { ...P, source: 'guided' });
-    setInB(currentFlow() === 'b');
+    // In flows B and C the connect started on the screen that sent people here (B-03 modal, C-03, locks…); A-07 only logs the view.
+    const flow = currentFlow();
+    if (flow === 'a') track('exchange_connect_started', { ...P, source: 'guided' });
+    setInApp(flow === 'a' ? null : flow);
   }, []);
 
   const current = EXCHANGES.find((e) => e.id === selected)!;
@@ -75,7 +77,7 @@ export default function ChooseExchange() {
       <div className={s.grid} aria-hidden />
 
       <div className={s.centerMain}>
-        {inB ? <StepHeader step={0} total={0} onBack={() => router.push('/b/dashboard')} /> : <StepHeader step={6} total={SIGNUP_STEPS} onBack={() => router.push('/why-connect')} />}
+        {inApp ? <StepHeader step={0} total={0} onBack={() => (inApp === 'b' ? router.push('/b/dashboard') : router.back())} /> : <StepHeader step={6} total={SIGNUP_STEPS} onBack={() => router.push('/why-connect')} />}
 
         <div className={`${s.centerContent} ${s.wide}`}>
           <div className={s.centerIntro}>

@@ -1,8 +1,9 @@
 /**
  * Prototype navigator: every screen of the A/B/C test, grouped the way César's canvas groups them.
- * Only flow A is built; Control is live today; B and C are listed so stakeholders see what's planned.
+ * Flows A, B and C are built; Control is live today.
  */
-export type Screen = { id: string; title: string; path?: string; note?: string };
+/** variants: extra links shown as chips under the row (e.g. one per trial day). */
+export type Screen = { id: string; title: string; path?: string; note?: string; variants?: { label: string; path: string }[] };
 export type Flow = { id: string; name: string; status: 'built' | 'progress' | 'live' | 'planned'; summary: string; screens: Screen[] };
 
 export const FLOWS: Flow[] = [
@@ -37,21 +38,41 @@ export const FLOWS: Flow[] = [
       { id: 'B-03', title: 'Dashboard + connect modal', path: '/b/dashboard' },
       { id: 'B-05', title: 'Connect · reuses A-07 to A-17', path: '/b/connect' },
       { id: 'B-06', title: 'Dashboard · not connected', path: '/b/dashboard?modal=0' },
-      { id: 'B-07', title: 'Locked feature sheet', path: '/b/dashboard?modal=0', note: 'Tap any lock on B-06' },
+      { id: 'B-07', title: 'Locked feature sheet', path: '/b/dashboard?modal=0&sheet=cashback', note: 'Or tap any lock on B-06',
+        variants: [['cashback', 'Cashback'], ['ranking', 'Ranking']].map(([k, l]) => ({ label: l, path: `/b/dashboard?modal=0&sheet=${k}` })) },
       { id: 'B-08', title: 'Emails · day 1 + day 3', path: '/b/emails' },
       { id: 'B-09', title: 'Dashboard · fully unlocked', path: '/b/unlocked?exchange=bitunix' }
     ]
   },
   {
-    id: 'C', name: 'C · Freemium 7 days', status: 'planned',
+    id: 'C', name: 'C · Freemium 7 days', status: 'built',
     summary: '7 free days of the free parts; then the freemium locks, but the account stays open.',
     screens: [
-      { id: 'C-01', title: 'Create account (short)', note: 'Reuses B-01' },
-      { id: 'C-03', title: 'Trial welcome' },
-      { id: 'C-04', title: 'Dashboard · trial' },
-      { id: 'C-09', title: 'Lock wall' },
-      { id: 'C-11', title: 'Reactivation landing' },
-      { id: 'C-13', title: 'Dashboard · fully unlocked' }
+      { id: 'C-01', title: 'Create account (short)', path: '/c', note: 'Reuses B-01, trial copy' },
+      { id: 'C-02', title: 'Verify email', path: '/c/verify?email=alex@example.com', note: 'Reuses A-03, step 2 of 2' },
+      { id: 'C-03', title: 'Trial welcome', path: '/c/welcome' },
+      { id: 'C-04', title: 'Dashboard · trial', path: '/c/dashboard?day=2', note: 'Pick a trial day',
+        variants: [1, 2, 3, 4, 5, 6, 7].map((d) => ({ label: `Day ${d}`, path: `/c/dashboard?day=${d}${d === 7 ? '&modal=0' : ''}` })) },
+      { id: 'C-05', title: 'Locked feature sheet · trial copy', path: '/c/dashboard?day=2&sheet=cashback', note: 'Or tap any lock on C-04',
+        variants: [['cashback', 'Cashback'], ['ranking', 'Ranking'], ['courses', 'Advanced courses']].map(([k, l]) => ({ label: l, path: `/c/dashboard?day=2&sheet=${k}` })) },
+      { id: 'C-06', title: 'Trial emails · D0, D5, D6', path: '/c/emails' },
+      { id: 'C-07', title: 'In-app nudges · D3, D5, D6', path: '/c/dashboard?day=4', note: 'One per nudge day',
+        variants: [
+          { label: 'D3 · day 4 banner', path: '/c/dashboard?day=4' },
+          { label: 'D5 · day 6 banner', path: '/c/dashboard?day=6' },
+          { label: 'D6 · day 7 banner', path: '/c/dashboard?day=7&modal=0' },
+          { label: 'D6 · last-day modal', path: '/c/dashboard?day=7&modal=1' }
+        ] },
+      { id: 'C-08', title: 'Day 8 · not connected', path: '/c/dashboard?day=8', note: 'Backend check; opens the lock wall' },
+      { id: 'C-09', title: 'Lock wall', path: '/c/locked' },
+      { id: 'C-10', title: 'Reactivation emails · D8, D14, D30', path: '/c/emails/reactivation' },
+      { id: 'C-11', title: 'Reactivation landing', path: '/c/back?email=reactivation_d8', note: 'Where every C-10 email lands',
+        variants: [
+          { label: 'Signed in', path: '/c/back?email=reactivation_d8' },
+          { label: 'Session expired', path: '/c/back?email=reactivation_d8&session=expired' }
+        ] },
+      { id: 'C-12', title: 'Connect · reuses A-07 to A-17', path: '/c/connect' },
+      { id: 'C-13', title: 'Dashboard · fully unlocked', path: '/c/unlocked?exchange=bitunix' }
     ]
   },
   {

@@ -24,10 +24,16 @@ const RULES = [
   { key: 'case', label: 'Upper and lower case letters', test: (p: string) => /[a-z]/.test(p) && /[A-Z]/.test(p) }
 ];
 
-/** What changes per flow. A starts after the A-01 welcome; B has no welcome, so B-01 is the entry. */
+/**
+ * What changes per flow. A starts after the A-01 welcome; B and C have no welcome, so B-01 and C-01 are the entry.
+ * C-01 (canvas): same as B-01; only the lead and "What happens next" talk about the 7-day free trial.
+ */
 const FLOW = {
-  a: { step: 1, total: SIGNUP_STEPS, back: '/', next: '/verify', entry: false, lead: 'Free, and it takes less than a minute.' },
-  b: { step: 1, total: 2, back: 'https://www.trade-x.de', next: '/b/verify', entry: true, lead: 'Free. Two short steps, then you’re in TradeX.' }
+  a: { step: 1, total: SIGNUP_STEPS, back: '/', next: '/verify', entry: false, lead: 'Free, and it takes less than a minute.', after: null },
+  b: { step: 1, total: 2, back: 'https://www.trade-x.de', next: '/b/verify', entry: true, lead: 'Free. Two short steps, then you’re in TradeX.',
+    after: ['You’re in.', 'Connect an exchange account opened through TradeX to unlock cashback.'] },
+  c: { step: 1, total: 2, back: 'https://www.trade-x.de', next: '/c/verify', entry: true, lead: 'Two short steps, then 7 free days.',
+    after: ['Explore TradeX free for 7 days.', 'Connect an exchange account opened through TradeX to keep it all unlocked.'] }
 } as const;
 
 type Errors = { email?: string; password?: string; terms?: string };
@@ -77,7 +83,7 @@ export default function CreateAccount({ flow = 'a' }: { flow?: keyof typeof FLOW
     }
     // A new account starts fresh: forget what earlier test runs in this tab marked as seen or done
     // (confirmed email, B-03 modal, A-18 tour and checklist, profile, UID).
-    try { ['tx_email_verified', 'tx_softlock_seen', 'tx_tour_done', 'tx_checklist', 'tx_profile', 'tx_uid'].forEach((k) => sessionStorage.removeItem(k)); } catch { /* nothing saved */ }
+    try { ['tx_email_verified', 'tx_softlock_seen', 'tx_tour_done', 'tx_checklist', 'tx_profile', 'tx_uid', 'tx_trial_start', 'tx_lastday_seen', 'tx_trial_used'].forEach((k) => sessionStorage.removeItem(k)); } catch { /* nothing saved */ }
     router.push(F.next + '?email=' + encodeURIComponent(email.trim()));
   };
 
@@ -139,13 +145,13 @@ export default function CreateAccount({ flow = 'a' }: { flow?: keyof typeof FLOW
 
           <p className={s.linkRow}><span>Already have an account?</span><a className={s.link} href="/login">Log in</a></p>
 
-          {flow === 'b' && (
+          {F.after && (
             <section className={s.process} aria-labelledby="next-steps">
               <h2 id="next-steps" className={s.processLabel}>What happens next</h2>
               <ol className={s.processList}>
                 <li className={s.processItem}><b>1</b><span>Create your account <em>· now</em></span></li>
-                <li className={s.processItem}><b>2</b><span>Confirm your email with a 6-digit code</span></li>
-                <li className={s.processItem}><b>3</b><span>You’re in. Connect an exchange account opened through TradeX to unlock cashback</span></li>
+                <li className={s.processItem}><b>2</b><span>Confirm your email with a 6‑digit code</span></li>
+                <li className={s.processItem}><b>3</b><span>{F.after.map((line, i) => <span key={i} style={{ display: 'block' }}>{line}</span>)}</span></li>
               </ol>
             </section>
           )}

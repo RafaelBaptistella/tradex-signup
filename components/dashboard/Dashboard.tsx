@@ -8,6 +8,8 @@
  * filled with a new member's data: rank 1 Rekrut, $0 volume. Copy in English.
  * Flow B · B-06 · Dashboard · not connected (mode 'b'): app usable; persistent top banner "Connect to start earning
  * cashback"; lock badge on cashback and ranking; rest of the platform open. Event: app_session_started {connected: false}.
+ * Flow C · C-04 · Dashboard · trial (mode 'c'): half the app open, countdown chip ("6 days left"), same locks as B-06 plus
+ * advanced courses, and a "Your trial so far" panel with what the person has used. Event: app_session_started {trial_day}.
  */
 import Image from 'next/image';
 import { useCallback, useEffect, useLayoutEffect, useRef, useState, type ReactNode } from 'react';
@@ -15,6 +17,7 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { exchangeById } from '@/lib/exchanges';
 import { track } from '@/lib/track';
 import LockedFeatureSheet, { type LockedFeature } from './LockedFeatureSheet';
+import TrialLastDayModal from './TrialLastDayModal';
 import d from './dashboard.module.css';
 
 const NAV: { icon: string; label: string; active?: boolean; lockedInB?: string }[] = [
@@ -48,43 +51,81 @@ const TILES: { img: string; title: string; link: string; lockedInB?: string }[] 
 ];
 
 type TourStep = { target: string; title: string; text: string };
-type ChecklistKey = 'first_course' | 'join_discord' | 'first_trade';
+type ChecklistKey = 'first_course' | 'join_discord' | 'first_trade' | 'read_analysis';
 const CHECK_KEY = 'tx_checklist';
+/** Flow C: what the person has tried during the trial (C-04 progress panel). */
+const TRIAL_USED_KEY = 'tx_trial_used';
+const DAY_MS = 86400000;
 
 /**
  * mode 'a': A-18, connected member, first session with tour and checklist.
  * mode 'b': flow B, signed up but not connected yet; no tour or checklist, and the page passes its own overlay (B-03 modal).
  * mode 'b-unlocked': B-09, flow B right after connecting: banner and locks gone, a short celebration, cashback unlocked.
+ * mode 'c-unlocked': C-13, flow C after connecting (during the trial, from the lock wall or a reactivation email):
+ *   trial chip, banner and every lock gone, same short celebration as B-09, plus advanced courses open.
+ * mode 'c': C-04, flow C during the 7-day trial: countdown chip, connect banner, locks, "Your trial so far" panel. ?day= sets the trial day for demos.
  */
-export default function Dashboard({ mode = 'a', overlay }: { mode?: 'a' | 'b' | 'b-unlocked'; overlay?: ReactNode }) {
-  const connected = mode !== 'b';
+export default function Dashboard({ mode = 'a', overlay }: { mode?: 'a' | 'b' | 'b-unlocked' | 'c' | 'c-unlocked'; overlay?: ReactNode }) {
+  const connected = mode === 'a' || mode === 'b-unlocked' || mode === 'c-unlocked';
+  const trial = mode === 'c';
   const firstTour = mode === 'a';
-  const justUnlocked = mode === 'b-unlocked';
+  const justUnlocked = mode === 'b-unlocked' || mode === 'c-unlocked';
   const [celebrate, setCelebrate] = useState(justUnlocked);
   const router = useRouter();
   /** B-06: cashback first, ranking locked until an exchange is connected. */
-  const unlockables: Unlockable[] = justUnlocked ? [{ label: 'Cashback', state: 'open' }, ...UNLOCKABLES] : connected ? UNLOCKABLES : [
+  const unlockables: Unlockable[] = justUnlocked ? [{ label: 'Cashback', state: 'open' }, ...(mode === 'c-unlocked' ? [UNLOCKABLES[0], UNLOCKABLES[1], { label: 'Advanced courses', state: 'open' as const }, UNLOCKABLES[2]] : UNLOCKABLES)] : connected ? UNLOCKABLES : [
     { label: 'Cashback', state: 'locked', feature: 'cashback' },
     UNLOCKABLES[0], UNLOCKABLES[1],
     { label: 'Leaderboard', state: 'locked', feature: 'ranking' },
-    UNLOCKABLES[3]
+    // C-04: advanced courses are locked during the trial too (C-03 lists them under “Unlocks with an exchange”).
+    trial ? { label: 'Advanced courses', state: 'locked', feature: 'courses' } : UNLOCKABLES[3]
   ];
   const connectFrom = (source: string) => {
-    track('exchange_connect_started', { source });
-    router.push('/b/connect');
+    track('exchange_connect_started', { source, ...(trial ? { trial_day: trialDay } : {}) });
+    router.push(trial ? '/c/connect' : '/b/connect');
   };
   /** B-07: a locked item opens a sheet about that feature, with the connect button. */
   const [sheet, setSheet] = useState<LockedFeature | null>(null);
   const locked = (feature: string) => {
-    track('locked_feature_clicked', { feature });
+    track('locked_feature_clicked', { feature, ...(trial ? { trial_day: trialDay } : {}) });
     setSheet(feature as LockedFeature);
   };
   const params = useSearchParams();
+  /** C-04: trial day 1–7, counted from when the email was confirmed (C-02). ?day= overrides it for demos. */
+  const [trialDay, setTrialDay] = useState(1);
+  const daysLeft = Math.max(1, 8 - trialDay);
+  /**
+   * C-07 in-app nudges. The canvas counts days since signup (D0 = signup day), so D3 = trial day 4,
+   * D5 = trial day 6 and D6 = trial day 7, the last day (which also opens the last-day modal).
+   */
+  const nudge = !trial ? null : ({
+    4: { d: 3, soon: false, title: 'You’re halfway through your free trial', text: '4 days left. Connect now and it all stays open after day 7.' },
+    6: { d: 5, soon: true, title: 'Two days left in your free trial', text: 'After day 7, courses and community pause until you connect.' },
+    7: { d: 6, soon: true, title: 'Last day of your free trial', text: 'Connect today and nothing pauses tomorrow.' }
+  } as Record<number, { d: number; soon: boolean; title: string; text: string }>)[trialDay] ?? null;
+  // Prototype navigator: its pills change only the query (?day=, ?sheet=), so the dashboard stays mounted.
+  // Re-read them on every query change: ?day= sets the trial day, ?sheet= opens that locked feature sheet (B-07 / C-05).
+  useEffect(() => {
+    if (trial) {
+      const forced = Number(params.get('day'));
+      if (forced >= 1 && forced <= 7) setTrialDay(forced);
+      if (forced === 8) { track('trial_ended', { connected: false }); router.replace('/c/locked'); return; }
+    }
+    const k = params.get('sheet');
+    if (connected) return;
+    setSheet(k === 'cashback' || k === 'ranking' || (k === 'courses' && trial) ? k : null);
+  }, [params]); // eslint-disable-line react-hooks/exhaustive-deps
+  const nudged = useRef<number | null>(null);
+  useEffect(() => {
+    if (!nudge || nudged.current === trialDay) return;
+    nudged.current = trialDay;
+    track('trial_nudge_viewed', { day: nudge.d, trial_day: trialDay, kind: 'banner' });
+  }, [trialDay]); // eslint-disable-line react-hooks/exhaustive-deps
   const ex = exchangeById(params.get('exchange')) ?? exchangeById('bitunix')!;
   const [name, setName] = useState('');
   const [tourStep, setTourStep] = useState<number | null>(firstTour ? 0 : null);
   const [rect, setRect] = useState<DOMRect | null>(null);
-  const [done, setDone] = useState<Record<ChecklistKey, boolean>>({ first_course: false, join_discord: false, first_trade: false });
+  const [done, setDone] = useState<Partial<Record<ChecklistKey, boolean>>>({});
   const [listOpen, setListOpen] = useState(true);
   const started = useRef(false);
 
@@ -94,18 +135,31 @@ export default function Dashboard({ mode = 'a', overlay }: { mode?: 'a' | 'b' | 
     { target: 'tiles', title: 'Where to start', text: 'Courses, the leaderboard, analyses and the community are one click away.' }
   ];
 
+  // Reads the session every time the effect runs (React's dev double mount resets state), but sends the event only once.
   useEffect(() => {
-    if (started.current) return;
+    const once = !started.current;
     started.current = true;
     try {
       const email = sessionStorage.getItem('tx_email_verified') || '';
       if (email) setName(email.split('@')[0].split(/[._-]/)[0].replace(/^\w/, (c) => c.toUpperCase()));
-      const saved = JSON.parse(sessionStorage.getItem(CHECK_KEY) || 'null');
+      const saved = JSON.parse(sessionStorage.getItem(trial ? TRIAL_USED_KEY : CHECK_KEY) || 'null');
       if (saved) setDone(saved);
       if (sessionStorage.getItem('tx_tour_done')) setTourStep(null);
     } catch { /* first session */ }
     if (window.matchMedia('(max-width: 1023px)').matches) setListOpen(false);
-    track('app_session_started', connected ? { connected: true, exchange: ex.id, first_session: firstTour } : { connected: false, first_session: true });
+    if (trial) {
+      let day = 1;
+      try { const t = Number(sessionStorage.getItem('tx_trial_start')); if (t) day = Math.floor((Date.now() - t) / DAY_MS) + 1; } catch { /* day 1 */ }
+      const forced = Number(params.get('day'));
+      if (forced >= 1 && forced <= 8) day = forced;
+      // C-08: the trial ended without a connected exchange → the whole platform locks (C-09 lock wall).
+      if (day > 7) { if (once) track('trial_ended', { connected: false }); router.replace('/c/locked'); return; }
+      day = Math.max(1, day);
+      setTrialDay(day);
+      if (once) track('app_session_started', { connected: false, trial_day: day });
+      return;
+    }
+    if (once) track('app_session_started', connected ? { connected: true, exchange: ex.id, first_session: firstTour } : { connected: false, first_session: true });
   }, [ex.id]);
 
   const measure = useCallback(() => {
@@ -131,11 +185,15 @@ export default function Dashboard({ mode = 'a', overlay }: { mode?: 'a' | 'b' | 
   };
 
   const check = (key: ChecklistKey) => {
-    track('checklist_item_clicked', { item: key });
-    setDone((c) => { const n = { ...c, [key]: true }; try { sessionStorage.setItem(CHECK_KEY, JSON.stringify(n)); } catch { /* not saved */ } return n; });
+    track(trial ? 'trial_item_clicked' : 'checklist_item_clicked', { item: key, ...(trial ? { trial_day: trialDay } : {}) });
+    setDone((c) => { const n = { ...c, [key]: true }; try { sessionStorage.setItem(trial ? TRIAL_USED_KEY : CHECK_KEY, JSON.stringify(n)); } catch { /* not saved */ } return n; });
   };
 
-  const items: { key: ChecklistKey; label: string; hint: string }[] = [
+  const items: { key: ChecklistKey; label: string; hint: string }[] = trial ? [
+    { key: 'first_course', label: 'Start the beginner course', hint: 'Level 1, step by step' },
+    { key: 'join_discord', label: 'Join the Discord', hint: 'Daily live trading with the coaches' },
+    { key: 'read_analysis', label: 'Read a market analysis', hint: 'What the coaches watch this week' }
+  ] : [
     { key: 'first_course', label: 'Start your first course', hint: 'The beginner course, step by step' },
     { key: 'join_discord', label: 'Join the Discord', hint: 'Daily live trading with the coaches' },
     { key: 'first_trade', label: `Make your first trade on ${ex.name}`, hint: 'Your cashback and rank start counting' }
@@ -188,11 +246,20 @@ export default function Dashboard({ mode = 'a', overlay }: { mode?: 'a' | 'b' | 
         {celebrate && (
           <div className={`${d.banner} ${d.celebrate}`} role="status">
             <span className={d.bannerIcon} aria-hidden><Image src="/signup/check.svg" alt="" width={16} height={16} /></span>
-            <p><b>{ex.name} connected. Cashback and ranking are unlocked</b><span>Your trades now count. Make your first trade to start earning and climbing.</span></p>
+            <p>{mode === 'c-unlocked'
+              ? <><b>{ex.name} connected. Everything is unlocked for good</b><span>No more trial: courses, community, cashback and ranks stay open.</span></>
+              : <><b>{ex.name} connected. Cashback and ranking are unlocked</b><span>Your trades now count. Make your first trade to start earning and climbing.</span></>}</p>
             <button type="button" className={d.bannerGhost} onClick={() => { track('unlock_celebration_dismissed', { exchange: ex.id }); setCelebrate(false); }}>Got it</button>
           </div>
         )}
-        {!connected && (
+        {trial && (
+          <div className={`${d.banner} ${nudge?.soon ? d.bannerSoon : ''}`} role="region" aria-label="Your free trial">
+            <span className={d.bannerIcon} aria-hidden><Image src={nudge ? '/signup/icons/timer.svg' : '/dashboard/icons/lock.svg'} alt="" width={16} height={16} /></span>
+            <p><b>{nudge ? nudge.title : 'Keep it all after your trial'}</b><span>{nudge ? nudge.text : 'Connect an exchange to unlock cashback and ranks, for good.'}</span></p>
+            <button type="button" onClick={() => connectFrom(nudge ? 'trial_nudge' : 'trial_banner')}>Connect exchange</button>
+          </div>
+        )}
+        {!connected && !trial && (
           <div className={d.banner} role="region" aria-label="Connect your exchange">
             <span className={d.bannerIcon} aria-hidden><Image src="/dashboard/icons/lock.svg" alt="" width={16} height={16} /></span>
             <p><b>Connect to start earning cashback</b><span>Open Bitunix or Pionex through TradeX to unlock cashback and your ranking.</span></p>
@@ -200,7 +267,15 @@ export default function Dashboard({ mode = 'a', overlay }: { mode?: 'a' | 'b' | 
           </div>
         )}
         <header className={d.head}>
-          <h1>{name ? `Welcome ${name}!` : 'Welcome to TradeX!'}</h1>
+          <div className={d.headRow}>
+            <h1>{name ? `Welcome ${name}!` : 'Welcome to TradeX!'}</h1>
+            {trial && (
+              <span className={`${d.trialChip} ${daysLeft <= 2 ? d.trialChipSoon : ''}`} aria-label={`Free trial: ${daysLeft === 1 ? 'last day' : `${daysLeft} days left`}`}>
+                <Image src="/signup/icons/timer.svg" alt="" width={16} height={16} />
+                {daysLeft === 1 ? 'Last day of your trial' : `${daysLeft} days left`}
+              </span>
+            )}
+          </div>
           <p>Track your ranking, claim your rewards and explore community, streams and analyses in one place.</p>
         </header>
 
@@ -251,10 +326,10 @@ export default function Dashboard({ mode = 'a', overlay }: { mode?: 'a' | 'b' | 
         </section>
       </main>
 
-      {firstTour && tourStep === null && (
+      {((firstTour && tourStep === null) || trial) && (
         <aside className={d.checklist} aria-labelledby="checklist-title">
           <button type="button" className={d.checklistHead} onClick={() => setListOpen((o) => !o)} aria-expanded={listOpen} aria-controls="checklist-items">
-            <p id="checklist-title">Get started</p>
+            <p id="checklist-title">{trial ? 'Your trial so far' : 'Get started'}</p>
             <span>{doneCount}/3 <i className={listOpen ? d.chevUp : d.chevDown} aria-hidden /></span>
           </button>
           <div className={d.checklistBar}><div style={{ width: `${(doneCount / 3) * 100}%` }} /></div>
@@ -268,6 +343,7 @@ export default function Dashboard({ mode = 'a', overlay }: { mode?: 'a' | 'b' | 
               </li>
             ))}
           </ul>
+          {trial && !listOpen ? null : trial && <p className={d.trialFoot}><span>Day {trialDay} of 7.</span><span>What you try now stays yours when you connect.</span></p>}
         </aside>
       )}
 
@@ -288,7 +364,8 @@ export default function Dashboard({ mode = 'a', overlay }: { mode?: 'a' | 'b' | 
         </div>
       )}
       {overlay}
-      {sheet && <LockedFeatureSheet feature={sheet} onConnect={() => connectFrom('locked_feature')} onClose={() => setSheet(null)} />}
+      {trial && trialDay === 7 && <TrialLastDayModal onConnect={() => connectFrom('trial_last_day_modal')} />}
+      {sheet && <LockedFeatureSheet feature={sheet} trialDay={trial ? trialDay : undefined} onConnect={() => connectFrom('locked_feature')} onClose={() => setSheet(null)} />}
     </div>
   );
 }

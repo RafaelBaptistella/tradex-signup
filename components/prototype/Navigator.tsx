@@ -43,7 +43,11 @@ export default function Navigator() {
 
   /** The page currently shown, whether full screen or inside the phone frame. */
   const shownPath = inDevice ? (params.get('path') || '/') : current;
-  const isCurrent = (path?: string) => !!path && path.split('?')[0] === shownPath.split('?')[0];
+  // Several rows can share a route (C-04, C-05 and C-07 are all /c/dashboard), so an exact match (with its query) wins;
+  // otherwise the row whose route matches is highlighted.
+  const allPaths = [...FLOWS, ...EXTRAS].flatMap((g) => g.screens.flatMap((s) => [s.path, ...(s.variants ?? []).map((v) => v.path)]));
+  const exact = allPaths.includes(shownPath);
+  const isCurrent = (path?: string) => !!path && (exact ? path === shownPath : path.split('?')[0] === shownPath.split('?')[0]);
 
   const go = (path: string) => {
     router.push(inDevice ? `/device?path=${encodeURIComponent(path)}` : path);
@@ -53,19 +57,22 @@ export default function Navigator() {
     if (view === 'phone' && !inDevice) router.push(`/device?path=${encodeURIComponent(current)}`);
     if (view === 'desktop' && inDevice) router.push(shownPath);
   };
-  const reset = () => {
-    try { sessionStorage.clear(); } catch { /* nothing saved */ }
-    go('/');
-  };
-
   const row = (s: Screen, i: number) => {
     const disabled = !s.path;
+    const onVariant = s.variants?.some((v) => isCurrent(v.path));
     return (
       <li key={`${s.id}-${i}`}>
-        <button type="button" className={`${n.row} ${isCurrent(s.path) ? n.rowOn : ''}`} disabled={disabled} onClick={() => s.path && go(s.path)} aria-current={isCurrent(s.path) ? 'page' : undefined}>
+        <button type="button" className={`${n.row} ${isCurrent(s.path) || onVariant ? n.rowOn : ''}`} disabled={disabled} onClick={() => s.path && go(s.path)} aria-current={isCurrent(s.path) ? 'page' : undefined}>
           <span className={n.id}>{s.id}</span>
           <span className={n.title}>{s.title}{s.note && <small>{s.note}</small>}</span>
         </button>
+        {s.variants && (
+          <div className={n.variants} role="group" aria-label={`${s.id} variants`}>
+            {s.variants.map((v) => (
+              <button key={v.path} type="button" className={`${n.chip} ${isCurrent(v.path) ? n.chipOn : ''}`} onClick={() => go(v.path)} aria-current={isCurrent(v.path) ? 'page' : undefined}>{v.label}</button>
+            ))}
+          </div>
+        )}
       </li>
     );
   };
@@ -129,7 +136,6 @@ export default function Navigator() {
           </div>
 
           <div className={n.foot}>
-            <button type="button" onClick={reset}>Restart flow A</button>
             <span>Press P to show or hide</span>
           </div>
         </aside>

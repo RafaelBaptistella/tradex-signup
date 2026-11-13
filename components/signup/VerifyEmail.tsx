@@ -2,6 +2,7 @@
 
 /**
  * Flow A · A-03 · Verify email (step 2 of 6). Reused by flow B · B-02 (step 2 of 2; canvas: "Same component as A-03").
+ * Also flow C · C-02 (step 2 of 2): confirming the email starts the 7-day trial and fires trial_started.
  * Based on Figma "2. 2FA" (645:22899 desktop, 645:22608 mobile).
  * Canvas requirements: code input, resend + change email, a tip shown while waiting.
  * Events (tracking brief): signup_step_viewed, email_verification_sent {channel, attempt},
@@ -17,11 +18,15 @@ import { sendCode, verifyCode } from '@/lib/mockApi';
 
 const RESEND_AFTER = 30;
 export const VERIFIED_KEY = 'tx_email_verified';
+/** Flow C: when the 7-day trial started (ms since epoch). Set once, when the email is confirmed. */
+export const TRIAL_KEY = 'tx_trial_start';
+export const TRIAL_DAYS = 7;
 
 /** What changes per flow. B-02 is the last signup step: confirming the email opens TradeX (B-03). */
 const FLOW = {
   a: { step: 2, total: SIGNUP_STEPS, next: '/about', account: '/account', tip: 'Next we ask three quick questions about your trading, so TradeX shows you the courses and rewards that fit you first.' },
-  b: { step: 2, total: 2, next: '/b/dashboard', account: '/b', tip: 'This is the last step. Right after it, TradeX opens and you can look around.' }
+  b: { step: 2, total: 2, next: '/b/dashboard', account: '/b', tip: 'This is the last step. Right after it, TradeX opens and you can look around.' },
+  c: { step: 2, total: 2, next: '/c/welcome', account: '/c', tip: 'This is the last step. Right after it, your 7 free days start.' }
 } as const;
 
 export default function VerifyEmail({ flow = 'a' }: { flow?: keyof typeof FLOW }) {
@@ -67,6 +72,16 @@ export default function VerifyEmail({ flow = 'a' }: { flow?: keyof typeof FLOW }
       setStatus('ok');
       try { sessionStorage.setItem(VERIFIED_KEY, email); } catch { /* Back from A-04 then asks for a code again */ }
       track('email_verified', { ...stepProps('verify_email'), minutes_since_register: Math.round((Date.now() - openedAt.current) / 60000) });
+      // C-02: confirming the email starts the 7-day trial (once per account). C-03/C-04 read the start time for the countdown.
+      if (flow === 'c') {
+        let start: string | null = null;
+        try { start = sessionStorage.getItem(TRIAL_KEY); } catch { /* no storage: start now */ }
+        if (!start) {
+          const now = Date.now();
+          try { sessionStorage.setItem(TRIAL_KEY, String(now)); } catch { /* countdown falls back to day 1 */ }
+          track('trial_started', { trial_days: TRIAL_DAYS, trial_ends_at: new Date(now + TRIAL_DAYS * 86400000).toISOString() });
+        }
+      }
       router.push(F.next);
       return;
     }
@@ -155,7 +170,7 @@ export default function VerifyEmail({ flow = 'a' }: { flow?: keyof typeof FLOW }
 
           <aside className={s.tip} aria-label="While you wait">
             <p className={s.tipLabel}>While you wait</p>
-            <p>{F.tip}</p>
+            <p><Lines text={F.tip} /></p>
           </aside>
         </div>
 
