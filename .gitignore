@@ -1,0 +1,9 @@
+node_modules
+.next
+.env*.local
+next-env.d.ts
+*.tsbuildinfo
+.vercel
+
+# Raw exchange prints: contain personal data, never commit
+reference/

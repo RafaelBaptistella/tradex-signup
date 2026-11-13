@@ -1,0 +1,147 @@
+/* Live dashboard, Figma Live Pages → Dashboard → "Beginner" (1787:24442), 1920 × 1029. */
+.page { position: relative; display: flex; min-height: 100vh; background: #070b12; color: #fff; }
+.bg { position: fixed; inset: 0; pointer-events: none; background: linear-gradient(180deg, #3d5464 0%, #1d395c 8.4264%, #10223d 18.775%, #09111f 33.874%, #080e18 62.352%, #070b12 100%); }
+.noise { position: absolute; inset: 0; background: url('/signup/noise.png') top left / 573.44px 573.44px; opacity: 0.25; mix-blend-mode: soft-light; }
+.grid { position: absolute; inset: 0; background: url('/signup/grid.png') top left / 28px 28px; opacity: 0.2; }
+
+/* Sidebar (Menu component, 279 wide) */
+.sidebar { position: sticky; top: 0; z-index: 2; width: 279px; height: 100vh; flex: none; display: flex; flex-direction: column; justify-content: space-between; padding: 24px 0 24px; background: rgba(7, 11, 18, 0.5); border-right: 1px solid rgba(255, 255, 255, 0.1); }
+.sideTop, .sideBottom { display: flex; flex-direction: column; gap: 16px; }
+.brandRow { display: flex; align-items: center; justify-content: space-between; padding: 0 12px; }
+.bell { width: 32px; height: 32px; border-radius: 8px; background: rgba(255, 255, 255, 0.06); }
+.search { display: flex; align-items: center; gap: 8px; height: 40px; margin: 0 12px; padding: 4px 12px; border: 1px solid rgba(255, 255, 255, 0.15); border-radius: 8px; font-size: 14px; font-weight: 500; color: rgba(255, 255, 255, 0.7); }
+.navLabel { padding: 6px 24px 0; border-top: 1px solid rgba(255, 255, 255, 0.08); font-size: 12px; font-weight: 500; text-transform: uppercase; opacity: 0.4; }
+.nav { display: flex; flex-direction: column; padding: 0 12px; }
+.navItem { display: flex; align-items: center; gap: 12px; padding: 12px; border: 1px solid transparent; border-radius: 8px; color: #fff; font-size: 14px; font-weight: 500; text-decoration: none; opacity: 0.8; }
+.navItem:hover { background: rgba(255, 255, 255, 0.05); opacity: 1; }
+.navActive { opacity: 1; border-color: #40c7f4; background: linear-gradient(90deg, rgba(64, 199, 244, 0.22), rgba(64, 199, 244, 0.04)); box-shadow: inset 0 0 6px rgba(255, 255, 255, 0.3); }
+.user { display: flex; align-items: center; gap: 10px; margin: 0 12px; padding: 10px 12px; border-radius: 8px; background: rgba(255, 255, 255, 0.05); }
+.user div { display: flex; flex-direction: column; }
+.user b { font-size: 14px; font-weight: 600; }
+.userTag { font-size: 12px; opacity: 0.6; }
+.avatar { width: 32px; height: 32px; flex: none; display: grid; place-items: center; border-radius: 50%; background: #1166a6; font-weight: 600; text-transform: uppercase; }
+.sideRank { position: relative; height: 150px; margin: 0 12px; overflow: hidden; border-radius: 12px; background: radial-gradient(94% 100% at 50% 0%, #091020 0%, #0b2a49 42%, #1166a6 65%, #40c7f4 85%, #a9e4f6 100%); }
+.sideRankWord { position: absolute; left: 0; right: 0; bottom: -10px; text-align: center; font-size: 56px; font-weight: 500; letter-spacing: -2px; color: rgba(255, 255, 255, 0.45); }
+.sideRankGem { position: absolute; left: 50%; top: 50%; width: 110px; height: 110px; transform: translate(-50%, -55%); }
+
+/* Main column (content 1331 wide at 1920) */
+.main { position: relative; z-index: 1; flex: 1; min-width: 0; padding: 40px clamp(16px, 4vw, 80px) 120px; display: flex; flex-direction: column; gap: 12px; max-width: 1491px; }
+.head { padding-bottom: 12px; }
+.head h1 { margin: 0; font-size: 24px; font-weight: 600; }
+.head p { margin: 8px 0 0; font-size: 14px; color: rgba(255, 255, 255, 0.7); }
+
+.hero { position: relative; display: flex; align-items: flex-end; gap: 16px; height: 400px; padding: 14px; overflow: hidden; border-radius: 16px; background: rgba(255, 255, 255, 0.05); box-shadow: 0 32.863px 95.09px rgba(0, 0, 0, 0.28); }
+.heroImg { position: absolute; inset: 0; background: url('/dashboard/hero.jpg') center / cover no-repeat; }
+.heroImg::after { content: ''; position: absolute; inset: 0; background: linear-gradient(180deg, rgba(7, 11, 18, 0) 40%, rgba(7, 11, 18, 0.85) 100%), linear-gradient(90deg, rgba(7, 11, 18, 0) 45%, rgba(7, 11, 18, 0.55) 62%, rgba(7, 11, 18, 0.8) 100%); }
+.heroRank { position: relative; z-index: 1; flex: 1; display: flex; align-items: flex-end; gap: 16px; padding: 12px 32px 8px 8px; }
+.badge { width: 81px; height: 81px; flex: none; display: grid; place-items: center; border-radius: 50%; border: 2px solid rgba(64, 199, 244, 0.6); background: radial-gradient(circle, #0b2a49, #091020); box-shadow: 0 0 0 4px rgba(64, 199, 244, 0.15); }
+.rankInfo { flex: 1; display: flex; flex-direction: column; gap: 8px; }
+.rankRow { display: flex; align-items: flex-end; justify-content: space-between; gap: 12px; }
+.rankName { margin: 0; font-size: 20px; font-weight: 600; }
+.rankName span { font-size: 14px; font-weight: 500; opacity: 0.5; }
+.rankVol { margin: 0; font-size: 20px; font-weight: 500; }
+.rankNext { margin: 0; font-size: 14px; font-weight: 500; opacity: 0.8; }
+.rankNext b { font-weight: 600; color: #40c7f4; }
+.bar { display: flex; align-items: center; gap: 12px; }
+.barLabel { font-family: ui-monospace, monospace; font-size: 16px; color: rgba(255, 255, 255, 0.8); }
+.barTrack { flex: 1; height: 4px; border-radius: 1px; background: rgba(255, 255, 255, 0.15); }
+.barFill { height: 100%; min-width: 4px; border-radius: 1px; background: #40c7f4; box-shadow: 0 0 8px #40c7f4; }
+
+.unlock { position: relative; z-index: 1; width: 400px; height: 100%; flex: none; display: flex; flex-direction: column; gap: 12px; padding: 4px 4px 0 0; }
+.unlockHead { display: flex; align-items: center; justify-content: space-between; }
+.unlockHead p { margin: 0; font-size: 16px; font-weight: 500; }
+.unlockHead span { display: flex; align-items: center; gap: 4px; font-size: 18px; opacity: 0.6; }
+.unlockList { margin: 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: 8px; }
+.unlockItem { display: flex; align-items: center; gap: 16px; height: 72px; padding: 12px; border-radius: 8px; background: rgba(255, 255, 255, 0.05); -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px); }
+.unlockIcon { width: 56px; height: 48px; flex: none; display: grid; place-items: center; overflow: hidden; }
+.unlockIcon img { width: 100%; height: auto; }
+.unlockLabel { flex: 1; font-size: 16px; font-weight: 500; opacity: 0.85; }
+.unlockLocked { opacity: 0.5; }
+.pill { display: inline-flex; align-items: center; gap: 4px; padding: 2px 8px; border-radius: 6px; background: rgba(255, 255, 255, 0.1); font-size: 12px; font-weight: 500; }
+.pillRound { width: 28px; height: 28px; display: grid; place-items: center; border-radius: 50%; background: rgba(255, 255, 255, 0.1); }
+
+.tiles { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; }
+.tile { position: relative; height: 400px; display: flex; flex-direction: column; justify-content: flex-end; overflow: hidden; border-radius: 16px; background: rgba(255, 255, 255, 0.04); box-shadow: 0 32.863px 95.09px rgba(0, 0, 0, 0.28), inset 0 1.707px 23.602px rgba(255, 255, 255, 0.05); color: #fff; text-decoration: none; }
+.tileImg { position: absolute; left: 0; right: 0; top: 0; height: 303px; background-size: cover; background-position: center top; }
+.tileText { position: relative; display: flex; flex-direction: column; gap: 8px; padding: 24px; }
+.tileText b { font-size: 18px; font-weight: 500; }
+.tileText span { font-size: 14px; opacity: 0.6; }
+.tile:hover .tileText span { opacity: 1; }
+
+/* Checklist (A-18): floating card, bottom right */
+.checklist { position: fixed; right: 24px; bottom: 24px; z-index: 5; width: 340px; padding: 16px; border-radius: 16px; background: rgba(16, 21, 29, 0.92); border: 1px solid rgba(255, 255, 255, 0.1); -webkit-backdrop-filter: blur(20px); backdrop-filter: blur(20px); box-shadow: 0 32.863px 95.09px rgba(0, 0, 0, 0.4); }
+.checklistHead { display: flex; align-items: center; justify-content: space-between; }
+.checklistHead p { margin: 0; font-size: 16px; font-weight: 600; }
+.checklistHead span { font-size: 14px; color: #40c7f4; }
+.checklistBar { height: 4px; margin: 10px 0 12px; border-radius: 2px; background: rgba(255, 255, 255, 0.1); }
+.checklistBar div { height: 100%; border-radius: 2px; background: #40c7f4; transition: width 0.3s; }
+.checklist ul { margin: 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: 6px; }
+.checkItem { width: 100%; display: flex; align-items: flex-start; gap: 10px; padding: 10px; border: 0; border-radius: 8px; background: rgba(255, 255, 255, 0.05); color: #fff; font: inherit; text-align: left; cursor: pointer; }
+.checkItem:hover { background: rgba(255, 255, 255, 0.09); }
+.checkItem b { display: block; font-size: 14px; font-weight: 500; }
+.checkItem small { display: block; margin-top: 2px; font-size: 12px; color: rgba(255, 255, 255, 0.6); }
+.checkBox { width: 18px; height: 18px; flex: none; margin-top: 1px; display: grid; place-items: center; border-radius: 50%; border: 1.5px solid rgba(255, 255, 255, 0.4); }
+.checkDone b { text-decoration: line-through; opacity: 0.6; }
+.checkDone .checkBox { border-color: #40c7f4; background: rgba(64, 199, 244, 0.25); }
+
+/* Guided tour */
+.tourLayer { position: fixed; inset: 0; z-index: 20; }
+.spot { position: fixed; border-radius: 18px; border: 2px solid #40c7f4; box-shadow: 0 0 0 9999px rgba(3, 6, 10, 0.72); transition: all 0.25s ease; pointer-events: none; }
+.pop { position: fixed; width: 360px; padding: 16px; border-radius: 16px; background: rgba(255, 255, 255, 0.12); -webkit-backdrop-filter: blur(24px); backdrop-filter: blur(24px); border: 1px solid rgba(255, 255, 255, 0.12); box-shadow: 0 32.863px 95.09px rgba(0, 0, 0, 0.4); }
+.pop h2 { margin: 4px 0 6px; font-size: 18px; font-weight: 600; }
+.pop p { margin: 0; font-size: 15px; line-height: 1.5; color: rgba(255, 255, 255, 0.85); }
+.pop .popStep { font-size: 12px; color: #40c7f4; text-transform: uppercase; letter-spacing: 0.04em; }
+.popActions { display: flex; justify-content: space-between; align-items: center; margin-top: 14px; }
+.popSkip { padding: 0; border: 0; background: none; color: rgba(255, 255, 255, 0.7); font: inherit; font-size: 14px; cursor: pointer; }
+.popNext { height: 40px; padding: 0 20px; border: 0; border-radius: 8px; background: #fff; color: #000; font: inherit; font-size: 16px; font-weight: 500; cursor: pointer; }
+
+/* No mobile dashboard in Figma: sidebar hides, columns stack. */
+@media (max-width: 1023px) {
+  .sidebar { display: none; }
+  .main { padding: 24px 16px 260px; }
+  .hero { height: auto; flex-direction: column; align-items: stretch; padding: 0; }
+  .heroImg { inset: 0 0 auto 0; height: 220px; }
+  .heroRank { padding: 150px 16px 16px; }
+  .unlock { width: auto; height: auto; padding: 0 16px 16px; }
+  .rankRow { flex-direction: column; align-items: flex-start; }
+  .tiles { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .tile { height: 260px; }
+  .tileImg { height: 190px; }
+  .tileText { padding: 14px; }
+  .checklist { left: 12px; right: 12px; bottom: 12px; width: auto; }
+  .pop { left: 12px !important; right: 12px; bottom: 12px; top: auto !important; width: auto; }
+}
+@media (max-width: 520px) { .tiles { grid-template-columns: 1fr; } .tile { height: 300px; } .tileImg { height: 220px; } }
+.checklistHead { width: 100%; padding: 0; border: 0; background: none; color: #fff; font: inherit; cursor: pointer; }
+.checklistHead span { display: inline-flex; align-items: center; gap: 8px; }
+.chevUp, .chevDown { width: 8px; height: 8px; border-right: 1.5px solid currentColor; border-bottom: 1.5px solid currentColor; }
+.chevUp { transform: rotate(-135deg) translate(-2px, -2px); }
+.chevDown { transform: rotate(45deg) translate(-2px, -2px); }
+.checklist ul[hidden] { display: none; }
+
+/* B-06 not connected: banner, lock badges */
+.banner { display: flex; align-items: center; gap: 14px; padding: 12px 12px 12px 16px; border-radius: 12px; border: 1px solid rgba(64, 199, 244, 0.45); background: linear-gradient(90deg, rgba(64, 199, 244, 0.18), rgba(64, 199, 244, 0.05)); -webkit-backdrop-filter: blur(12px); backdrop-filter: blur(12px); }
+.bannerIcon { width: 36px; height: 36px; flex: none; display: grid; place-items: center; border-radius: 50%; background: rgba(64, 199, 244, 0.2); }
+.banner p { flex: 1; margin: 0; display: flex; flex-direction: column; gap: 2px; }
+.banner b { font-size: 16px; font-weight: 600; }
+.banner p span { font-size: 14px; color: rgba(255, 255, 255, 0.7); }
+.banner button { height: 40px; flex: none; padding: 0 18px; border: 0; border-radius: 8px; background: #fff; color: #000; font: inherit; font-size: 15px; font-weight: 500; cursor: pointer; }
+.navLock { margin-left: auto; display: grid; place-items: center; width: 22px; height: 22px; border-radius: 6px; background: rgba(255, 255, 255, 0.1); }
+.heroLock { position: absolute; left: 8px; bottom: 96px; z-index: 2; display: inline-flex; align-items: center; gap: 6px; height: 26px; padding: 0 10px; border: 0; border-radius: 99px; background: rgba(3, 6, 10, 0.75); color: #fff; font: inherit; font-size: 12px; font-weight: 500; cursor: pointer; }
+.heroRank { position: relative; }
+.unlockFeature { cursor: pointer; }
+.unlockFeature:hover { opacity: 0.8; }
+.tileLock { position: absolute; top: 14px; right: 14px; z-index: 1; display: inline-flex; align-items: center; gap: 6px; height: 26px; padding: 0 10px; border-radius: 99px; background: rgba(3, 6, 10, 0.75); font-size: 12px; font-weight: 500; }
+@media (max-width: 1023px) {
+  .banner { flex-wrap: wrap; }
+  .banner button { width: 100%; }
+  .heroLock { bottom: auto; top: 120px; left: 16px; }
+}
+
+/* B-09 just unlocked: celebration card and a glow on the newly opened items */
+.celebrate { border-color: rgba(134, 239, 172, 0.5); background: linear-gradient(90deg, rgba(134, 239, 172, 0.16), rgba(64, 199, 244, 0.06)); animation: pop 0.5s ease-out; }
+.celebrate .bannerIcon { background: rgba(134, 239, 172, 0.22); }
+.bannerGhost { background: rgba(255, 255, 255, 0.1) !important; color: #fff !important; }
+.justOpened { box-shadow: inset 0 0 0 1px rgba(134, 239, 172, 0.55), 0 0 18px rgba(134, 239, 172, 0.18); animation: pop 0.6s ease-out; }
+@keyframes pop { 0% { transform: scale(0.98); opacity: 0.4; } 100% { transform: none; opacity: 1; } }
+@media (prefers-reduced-motion: reduce) { .celebrate, .justOpened { animation: none; } }

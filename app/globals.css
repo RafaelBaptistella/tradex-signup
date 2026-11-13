@@ -1,0 +1,43 @@
+/* Tokens taken from the Figma file "TradeX – Platform", Live Pages → Sign Up. */
+:root {
+  --tx-bg: #03060a;
+  --tx-fg: #ffffff;
+  --tx-fg-muted: rgba(255, 255, 255, 0.6);
+  --tx-fg-soft: rgba(255, 255, 255, 0.8);
+  --tx-field: rgba(255, 255, 255, 0.08);
+  --tx-field-mobile: rgba(255, 255, 255, 0.12);
+  --tx-control: rgba(255, 255, 255, 0.08);
+  --tx-button-border: rgba(255, 255, 255, 0.02);
+  --tx-accent: #74d3fb;
+  --tx-step-number: #7fd6fb;
+  --tx-danger: #ff8f75;
+  --tx-radius-field: 6px;
+  --tx-radius: 8px;
+  --tx-radius-panel: 12px;
+  color-scheme: dark;
+}
+
+* { box-sizing: border-box; }
+
+html, body { margin: 0; padding: 0; background: var(--tx-bg); color: var(--tx-fg); }
+
+body {
+  min-height: 100vh;
+  font-family: var(--font-geist), ui-sans-serif, system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+button, input { font: inherit; color: inherit; }
+a { color: inherit; }
+
+:focus-visible { outline: 2px solid var(--tx-accent); outline-offset: 2px; }
+
+.sr-only {
+  position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
+  overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0;
+}
+
+/* No widow words: short last lines get balanced into the line above. */
+p, li, dd, legend, label { text-wrap: pretty; }
+h1, h2, h3 { text-wrap: balance; }
