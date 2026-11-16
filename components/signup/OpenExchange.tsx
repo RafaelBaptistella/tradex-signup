@@ -66,7 +66,7 @@ export default function OpenExchange() {
         <div className={`${s.centerContent} ${s.medium}`}>
           <div className={s.intro}>
             <h1 className={s.title}>Open {ex.name} through TradeX</h1>
-            <p className={s.lead}><Lines text={`Use our button, so ${ex.name} knows you came from TradeX. That’s what makes your cashback work.`} /></p>
+            <p className={s.lead}><Lines text={`Use our button, so ${ex.name} knows you came from TradeX. That’s what makes your volume count.`} /></p>
           </div>
 
           <section className={s.planBlock} aria-labelledby="code-title">

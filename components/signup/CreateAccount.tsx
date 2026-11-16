@@ -3,26 +3,22 @@
 /**
  * Flow A · A-02 · Create account (step 1 of 6). Reused by flow B · B-01 (step 1 of 2, entry screen).
  * Based on Figma "1. Sign Up" (645:22523 desktop, 645:22577 mobile).
- * Canvas requirements: email, password and terms checkbox in one step; side panel repeating
- * the main benefit; progress bar. States: default, email taken, weak password.
+ * Canvas requirements: email and terms checkbox in one step; side panel repeating the main benefit; progress bar.
+ * No password (decided 16 Nov 2026): TradeX logs people in with a 6-digit email code every time (2FA), so signup only
+ * asks for the email. States: default, email taken.
  * Events: signup_step_viewed {account}, register_submitted {method}, signup_field_error.
- * B-01 (canvas): same as control minus the exchange step; email, password, terms; progress of 2 steps.
+ * B-01 (canvas): same as control minus the exchange step; email, terms; progress of 2 steps.
  * B-01 is the first screen of flow B, so it also fires register_page_viewed and reads ?brand=.
  */
 import Image from 'next/image';
 import { useEffect, useRef, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { StepHeader, TextField, PrimaryButton, HelpButton, SignupVisual, styles as s } from './parts';
+import { StepHeader, TextField, PrimaryButton, HelpButton, SignupVisual, Lines, styles as s } from './parts';
 import { SIGNUP_STEPS } from '@/lib/flow';
 import { setFlow, rememberBrand, stepProps, track } from '@/lib/track';
 import { register } from '@/lib/mockApi';
 
 const EMAIL = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
-const RULES = [
-  { key: 'length', label: 'At least 8 characters', test: (p: string) => p.length >= 8 },
-  { key: 'number', label: 'A number', test: (p: string) => /\d/.test(p) },
-  { key: 'case', label: 'Upper and lower case letters', test: (p: string) => /[a-z]/.test(p) && /[A-Z]/.test(p) }
-];
 
 /**
  * What changes per flow. A starts after the A-01 welcome; B and C have no welcome, so B-01 and C-01 are the entry.
@@ -31,20 +27,18 @@ const RULES = [
 const FLOW = {
   a: { step: 1, total: SIGNUP_STEPS, back: '/', next: '/verify', entry: false, lead: 'Free, and it takes less than a minute.', after: null },
   b: { step: 1, total: 2, back: 'https://www.trade-x.de', next: '/b/verify', entry: true, lead: 'Free. Two short steps, then you’re in TradeX.',
-    after: ['You’re in.', 'Connect an exchange account opened through TradeX to unlock cashback.'] },
+    after: ['You’re in.', 'Connect an exchange account opened through TradeX to join the leaderboard and ranks.'] },
   c: { step: 1, total: 2, back: 'https://www.trade-x.de', next: '/c/verify', entry: true, lead: 'Two short steps, then 7 free days.',
     after: ['Explore TradeX free for 7 days.', 'Connect an exchange account opened through TradeX to keep it all unlocked.'] }
 } as const;
 
-type Errors = { email?: string; password?: string; terms?: string };
+type Errors = { email?: string; terms?: string };
 
 export default function CreateAccount({ flow = 'a' }: { flow?: keyof typeof FLOW }) {
   const F = FLOW[flow];
   const router = useRouter();
   const params = useSearchParams();
   const [email, setEmail] = useState(() => params.get('email') || '');
-  const [password, setPassword] = useState('');
-  const [showPassword, setShowPassword] = useState(false);
   const [terms, setTerms] = useState(false);
   const [errors, setErrors] = useState<Errors>({});
   const [busy, setBusy] = useState(false);
@@ -67,14 +61,13 @@ export default function CreateAccount({ flow = 'a' }: { flow?: keyof typeof FLOW
     e.preventDefault();
     const next: Errors = {};
     if (!EMAIL.test(email.trim())) { next.email = 'Enter an email address like name@example.com.'; fieldError('email', email ? 'invalid_format' : 'missing'); }
-    if (!RULES.every((r) => r.test(password))) { next.password = 'Choose a stronger password: it needs everything in the list below.'; fieldError('password', password ? 'weak' : 'missing'); }
     if (!terms) { next.terms = 'Please accept the terms to continue.'; fieldError('terms', 'not_accepted'); }
     setErrors(next);
     if (Object.keys(next).length) return;
 
     setBusy(true);
     track('register_submitted', { ...stepProps('account'), method: 'email' });
-    const result = await register(email, password);
+    const result = await register(email);
     if (result === 'email_taken') {
       setBusy(false);
       setErrors({ email: 'This email already has a TradeX account.' });
@@ -83,7 +76,7 @@ export default function CreateAccount({ flow = 'a' }: { flow?: keyof typeof FLOW
     }
     // A new account starts fresh: forget what earlier test runs in this tab marked as seen or done
     // (confirmed email, B-03 modal, A-18 tour and checklist, profile, UID).
-    try { ['tx_email_verified', 'tx_softlock_seen', 'tx_tour_done', 'tx_checklist', 'tx_profile', 'tx_uid', 'tx_trial_start', 'tx_lastday_seen', 'tx_trial_used'].forEach((k) => sessionStorage.removeItem(k)); } catch { /* nothing saved */ }
+    try { ['tx_email_verified', 'tx_softlock_seen', 'tx_tour_done', 'tx_checklist', 'tx_profile', 'tx_uid', 'tx_trial_start', 'tx_trial_used'].forEach((k) => sessionStorage.removeItem(k)); Object.keys(sessionStorage).filter((k) => k.startsWith('tx_daymodal_seen_')).forEach((k) => sessionStorage.removeItem(k)); } catch { /* nothing saved */ }
     router.push(F.next + '?email=' + encodeURIComponent(email.trim()));
   };
 
@@ -109,27 +102,7 @@ export default function CreateAccount({ flow = 'a' }: { flow?: keyof typeof FLOW
                 <p className={s.fieldNote}><a className={s.link} href="/login">Log in instead</a></p>
               )}
 
-              <div className={s.field}>
-                <label htmlFor="password" className={s.label}>Password</label>
-                <div className={s.passwordWrap}>
-                  <input
-                    id="password" className={`${s.input} ${errors.password ? s.inputError : ''}`} type={showPassword ? 'text' : 'password'}
-                    autoComplete="new-password" placeholder="Create a password" value={password}
-                    aria-invalid={Boolean(errors.password)} aria-describedby="password-rules"
-                    onChange={(e) => { setPassword(e.target.value); setErrors((x) => ({ ...x, password: undefined })); }}
-                  />
-                  <button type="button" className={s.passwordToggle} onClick={() => setShowPassword((v) => !v)} aria-pressed={showPassword}>
-                    {showPassword ? 'Hide' : 'Show'}
-                  </button>
-                </div>
-                {errors.password && <p className={s.error} role="alert">{errors.password}</p>}
-                <ul id="password-rules" className={s.rules}>
-                  {RULES.map((r) => {
-                    const ok = r.test(password);
-                    return <li key={r.key} className={ok ? s.ruleOk : ''}><span aria-hidden>{ok ? '✓' : '·'}</span>{r.label}<span className="sr-only">{ok ? ' (done)' : ' (missing)'}</span></li>;
-                  })}
-                </ul>
-              </div>
+              {!errors.email && <p className={`${s.fieldNote} ${s.fieldHint}`}><Lines text="No password needed. We email you a 6‑digit code each time you log in." /></p>}
 
               <div>
                 <label className={s.checkRow}>
@@ -162,14 +135,15 @@ export default function CreateAccount({ flow = 'a' }: { flow?: keyof typeof FLOW
 
       <SignupVisual>
         <aside className={s.sideBenefit} aria-label="Main benefit">
-          <p className={s.sideBenefitKicker}>Cashback on every trade</p>
-          <p className={s.sideBenefitText}>Trade on Bitunix or Pionex through TradeX and part of your fees comes back to you every month.</p>
+          <p className={s.sideBenefitKicker}>Monthly rewards for top traders</p>
+          <p className={s.sideBenefitText}>Trade on Bitunix or Pionex through TradeX to climb the leaderboard. Each month, the top traders share a prize pool.</p>
         </aside>
       </SignupVisual>
 
       <HelpButton stepKey="account">
         <h2>Need a hand?</h2>
         <p>Use an email you can open now: we send a 6-digit code to it in the next step.</p>
+        <p>There’s no password: every time you log in, we email you a new code.</p>
         <p>If this email already has an account, log in instead.</p>
         {/* Support contact: add the real address or chat link here. */}
         <p>Still stuck? Contact the TradeX support team.</p>

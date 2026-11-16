@@ -3,7 +3,7 @@
 /**
  * Flow A · A-05 · Your plan (step 4 of 6).
  * Canvas requirements: personalized benefit list from the A-04 answers (e.g. beginners see courses first),
- * rank 1 → 10 path preview, estimated cashback for a typical monthly volume.
+ * rank 1 → 10 path preview. (The cashback estimate was removed: rewards come from the monthly leaderboard, not a share of fees.)
  * Event: guided_plan_viewed.
  */
 import { useEffect, useRef, useState } from 'react';
@@ -18,11 +18,11 @@ const P = stepProps('your_plan');
 type Item = { key: string; title: string; text: string };
 const ITEMS: Record<string, Item> = {
   courses: { key: 'courses', title: '70h+ of courses', text: 'Start with the basics and move to advanced strategies at your own pace.' },
-  cashback: { key: 'cashback', title: 'Cashback on every trade', text: 'Part of your trading fees comes back to you every month.' },
+  cashback: { key: 'cashback', title: 'Monthly rewards for top traders', text: 'Your trading volume puts you on the leaderboard, and the top traders share a prize pool.' },
   community: { key: 'community', title: 'Discord + daily live trading', text: 'Trade alongside the community and the coaches every day.' }
 };
 
-/** Order by goal; beginners always get courses before cashback. */
+/** Order by goal ('cashback' = the leaderboard-rewards goal); beginners always get courses first. */
 function planFor(p: Profile): Item[] {
   const order = p.goal === 'cashback' ? ['cashback', 'courses', 'community']
     : p.goal === 'community' ? ['community', 'courses', 'cashback']
@@ -41,27 +41,16 @@ const HEADLINE: Record<string, string> = {
 
 /** Rank path preview. Which rank unlocks what is not confirmed yet, so unlocks are shown as examples along the path. */
 const UNLOCKS = [
-  { at: 1, text: 'Courses, community and cashback' },
+  { at: 1, text: 'Courses, community and the leaderboard' },
   { at: 4, text: 'Trading indicators and tools' },
   { at: 7, text: 'Signal group and live calls' },
   { at: 10, text: 'Strategy call with Tim and funded challenges' }
 ];
 
-/**
- * Cashback estimate. PLACEHOLDER until César confirms the formula: it assumes a 0.06% fee
- * on volume and 20% of those fees paid back. The real amount depends on the monthly pool.
- */
-const FEE_RATE = 0.0006;
-const CASHBACK_SHARE = 0.2;
-const VOLUMES = [1000, 10000, 50000, 250000];
-const DEFAULT_VOLUME: Record<string, number> = { new: 1000, some: 10000, pro: 50000 };
-const usd = (n: number) => '$' + n.toLocaleString('en-US', { minimumFractionDigits: n < 10 ? 2 : 0, maximumFractionDigits: n < 10 ? 2 : 0 });
-const short = (n: number) => '$' + (n >= 1000 ? n / 1000 + 'k' : n);
 
 export default function YourPlan() {
   const router = useRouter();
   const [profile, setProfile] = useState<Profile>({});
-  const [volume, setVolume] = useState(10000);
   const viewed = useRef(false);
 
   useEffect(() => {
@@ -69,13 +58,11 @@ export default function YourPlan() {
     viewed.current = true;
     const p = readProfile();
     setProfile(p);
-    setVolume(DEFAULT_VOLUME[p.level || 'some'] ?? 10000);
     track('signup_step_viewed', P);
     track('guided_plan_viewed', { ...P, level: p.level, goal: p.goal });
   }, []);
 
   const plan = planFor(profile);
-  const estimate = volume * FEE_RATE * CASHBACK_SHARE;
 
   return (
     <main className={s.centerPage}>
@@ -119,22 +106,6 @@ export default function YourPlan() {
                 ))}
               </ol>
               <p className={s.hint}><Lines text="You start at rank 1. Your trading volume moves you up." /></p>
-            </div>
-          </section>
-
-          <section className={s.planBlock} aria-labelledby="plan-cashback">
-            <h2 id="plan-cashback" className={s.questionLabel}>Your cashback estimate</h2>
-            <div className={s.planCard}>
-              <div className={s.volumeRow}>
-                <span className={s.hint}>If you trade per month</span>
-                <div className={s.volumeChips} role="radiogroup" aria-label="Monthly trading volume">
-                  {VOLUMES.map((v) => (
-                    <button key={v} type="button" role="radio" aria-checked={volume === v} className={s.volumeChip} onClick={() => setVolume(v)}>{short(v)}</button>
-                  ))}
-                </div>
-              </div>
-              <p className={s.estimate}><b>≈ {usd(estimate)}</b><span>back per month</span></p>
-              <p className={s.hint}><Lines text="An estimate. What you get depends on your volume and on the exchange’s monthly cashback pool." /></p>
             </div>
           </section>
 

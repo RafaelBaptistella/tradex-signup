@@ -35,11 +35,11 @@ export const FLOWS: Flow[] = [
     screens: [
       { id: 'B-01', title: 'Create account (short)', path: '/b', note: 'Reuses A-02, 2 steps' },
       { id: 'B-02', title: 'Verify email', path: '/b/verify?email=alex@example.com', note: 'Reuses A-03, step 2 of 2' },
-      { id: 'B-03', title: 'Dashboard + connect modal', path: '/b/dashboard' },
+      { id: 'B-03', title: 'Dashboard + connect paywall', path: '/b/dashboard?modal=1' },
       { id: 'B-05', title: 'Connect · reuses A-07 to A-17', path: '/b/connect' },
       { id: 'B-06', title: 'Dashboard · not connected', path: '/b/dashboard?modal=0' },
-      { id: 'B-07', title: 'Locked feature sheet', path: '/b/dashboard?modal=0&sheet=cashback', note: 'Or tap any lock on B-06',
-        variants: [['cashback', 'Cashback'], ['ranking', 'Ranking']].map(([k, l]) => ({ label: l, path: `/b/dashboard?modal=0&sheet=${k}` })) },
+      { id: 'B-07', title: 'Locked feature paywall', path: '/b/dashboard?modal=0&sheet=cashback', note: 'Or tap any lock on B-06',
+        variants: [['cashback', 'Monthly rewards'], ['ranking', 'Ranking']].map(([k, l]) => ({ label: l, path: `/b/dashboard?modal=0&sheet=${k}` })) },
       { id: 'B-08', title: 'Emails · day 1 + day 3', path: '/b/emails' },
       { id: 'B-09', title: 'Dashboard · fully unlocked', path: '/b/unlocked?exchange=bitunix' }
     ]
@@ -50,21 +50,26 @@ export const FLOWS: Flow[] = [
     screens: [
       { id: 'C-01', title: 'Create account (short)', path: '/c', note: 'Reuses B-01, trial copy' },
       { id: 'C-02', title: 'Verify email', path: '/c/verify?email=alex@example.com', note: 'Reuses A-03, step 2 of 2' },
-      { id: 'C-03', title: 'Trial welcome', path: '/c/welcome' },
-      { id: 'C-04', title: 'Dashboard · trial', path: '/c/dashboard?day=2', note: 'Pick a trial day',
-        variants: [1, 2, 3, 4, 5, 6, 7].map((d) => ({ label: `Day ${d}`, path: `/c/dashboard?day=${d}${d === 7 ? '&modal=0' : ''}` })) },
-      { id: 'C-05', title: 'Locked feature sheet · trial copy', path: '/c/dashboard?day=2&sheet=cashback', note: 'Or tap any lock on C-04',
-        variants: [['cashback', 'Cashback'], ['ranking', 'Ranking'], ['courses', 'Advanced courses']].map(([k, l]) => ({ label: l, path: `/c/dashboard?day=2&sheet=${k}` })) },
+      { id: 'C-03', title: 'Trial welcome · day 1 modal', path: '/c/welcome', note: 'Over the trial dashboard' },
+      // C-04: one screen per trial day, each with the modal that opens on the first visit of that day.
+      ...([
+        [1, 'Welcome (C-03)'], [2, 'Beginner course'], [3, 'Live trading on Discord'], [4, 'Halfway · D3 nudge'],
+        [5, 'Prize pools'], [6, 'Two days left · D5 nudge'], [7, 'Last day · D6 nudge']
+      ] as const).map(([d, t]) => ({
+        id: 'C-04', title: `Day ${d} · ${t}`, path: `/c/dashboard?day=${d}&modal=1`,
+        variants: [{ label: 'With modal', path: `/c/dashboard?day=${d}&modal=1` }, { label: 'Dashboard only', path: `/c/dashboard?day=${d}&modal=0` }]
+      })),
+      { id: 'C-05', title: 'Locked feature paywall · trial copy', path: '/c/dashboard?day=2&sheet=cashback', note: 'Or tap any lock on C-04',
+        variants: [['cashback', 'Monthly rewards'], ['ranking', 'Ranking'], ['courses', 'Advanced courses']].map(([k, l]) => ({ label: l, path: `/c/dashboard?day=2&sheet=${k}` })) },
       { id: 'C-06', title: 'Trial emails · D0, D5, D6', path: '/c/emails' },
-      { id: 'C-07', title: 'In-app nudges · D3, D5, D6', path: '/c/dashboard?day=4', note: 'One per nudge day',
+      { id: 'C-07', title: 'In-app nudges · sidebar trial card', path: '/c/dashboard?day=4&modal=0', note: 'The day modals are under C-04',
         variants: [
-          { label: 'D3 · day 4 banner', path: '/c/dashboard?day=4' },
-          { label: 'D5 · day 6 banner', path: '/c/dashboard?day=6' },
-          { label: 'D6 · day 7 banner', path: '/c/dashboard?day=7&modal=0' },
-          { label: 'D6 · last-day modal', path: '/c/dashboard?day=7&modal=1' }
+          { label: 'D3 · day 4', path: '/c/dashboard?day=4&modal=0' },
+          { label: 'D5 · day 6', path: '/c/dashboard?day=6&modal=0' },
+          { label: 'D6 · day 7', path: '/c/dashboard?day=7&modal=0' }
         ] },
       { id: 'C-08', title: 'Day 8 · not connected', path: '/c/dashboard?day=8', note: 'Backend check; opens the lock wall' },
-      { id: 'C-09', title: 'Lock wall', path: '/c/locked' },
+      { id: 'C-09', title: 'Lock wall paywall', path: '/c/locked', note: 'Over the locked platform' },
       { id: 'C-10', title: 'Reactivation emails · D8, D14, D30', path: '/c/emails/reactivation' },
       { id: 'C-11', title: 'Reactivation landing', path: '/c/back?email=reactivation_d8', note: 'Where every C-10 email lands',
         variants: [

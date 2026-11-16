@@ -46,7 +46,7 @@ export default function TrialEmails() {
                     <li>Join the Discord for daily live trading</li>
                     <li>Read this week’s market analysis</li>
                   </ol>
-                  <p>Cashback and ranks open when you connect an exchange account opened through TradeX. You can do it any time.</p>
+                  <p>The leaderboard and ranks open when you connect an exchange account opened through TradeX. You can do it any time.</p>
                 </>
               )}
               {m.id === 'trial_d5' && (
@@ -56,7 +56,7 @@ export default function TrialEmails() {
                   <p>After day 7, courses, community and tools pause until you connect an exchange.</p>
                   <p>Connect now and it all stays open, plus:</p>
                   <ul className={e.list}>
-                    <li>Cashback on every trade</li>
+                    <li>The monthly leaderboard and its prize pool</li>
                     <li>Your rank, starting as a Rekrut</li>
                     <li>Advanced courses, Level 3 and up</li>
                   </ul>
@@ -68,7 +68,7 @@ export default function TrialEmails() {
                   <div className={e.steps} aria-label="Day 7 of 7">{[1, 2, 3, 4, 5, 6, 7].map((d) => <span key={d} className={d < 7 ? e.done : d === 7 ? e.on : ''} />)}</div>
                   <h2>Tomorrow your access pauses</h2>
                   <p>Today is the last day of your free trial. Connect an exchange now and nothing pauses: what you started stays open.</p>
-                  <p>This month’s cashback pools:</p>
+                  <p>This month’s prize pools:</p>
                   <div className={e.pools}>
                     {EXCHANGES.map((x) => (
                       <div key={x.id}><Image src={x.logo.src} alt="" width={x.logo.width * 0.8} height={x.logo.height * 0.8} /><b>{x.pool}</b><span>{x.name} pool</span></div>

@@ -7,6 +7,10 @@ import { setFlow } from '@/lib/track';
 
 export default function Page() {
   const router = useRouter();
-  useEffect(() => { setFlow('b'); router.replace('/exchange'); }, [router]);
+  useEffect(() => {
+    setFlow('b');
+    const ex = new URLSearchParams(window.location.search).get('exchange');
+    router.replace(ex ? `/exchange?pick=${ex}` : '/exchange');
+  }, [router]);
   return null;
 }

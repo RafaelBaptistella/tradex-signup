@@ -2,7 +2,7 @@
 
 /**
  * Flow C · C-10 · Reactivation emails · D8, D14, D30 (days after signup; the trial ended on D7).
- * Canvas requirements: D8 your access is paused; D14 what you're missing (new courses, cashback); D30 last reminder.
+ * Canvas requirements: D8 your access is paused; D14 what you're missing (new courses, prize pools); D30 last reminder.
  * Events: email_sent {reactivation_d8 | d14 | d30} (backend), email_clicked.
  * Every link opens the C-11 reactivation landing. Same mail frame as A-21, B-08 and C-06.
  */
@@ -42,7 +42,7 @@ export default function ReactivationEmails() {
                   <p>Your free trial ended yesterday. Your account and everything you did in it are saved.</p>
                   <p>Connect an exchange account opened through TradeX and it all opens again, plus:</p>
                   <ul className={e.list}>
-                    <li>Cashback on every trade</li>
+                    <li>The monthly leaderboard and its prize pool</li>
                     <li>Your rank, starting as a Rekrut</li>
                     <li>Advanced courses, Level 3 and up</li>
                   </ul>
@@ -58,7 +58,7 @@ export default function ReactivationEmails() {
                     <li>Daily live trading on Discord</li>
                     <li>Fresh market analyses every week</li>
                   </ul>
-                  <p>And this month’s cashback pools:</p>
+                  <p>And this month’s prize pools:</p>
                   <div className={e.pools}>
                     {EXCHANGES.map((x) => (
                       <div key={x.id}><Image src={x.logo.src} alt="" width={x.logo.width * 0.8} height={x.logo.height * 0.8} /><b>{x.pool}</b><span>{x.name} pool</span></div>
@@ -70,7 +70,7 @@ export default function ReactivationEmails() {
                 <>
                   <h2>Your account is still here</h2>
                   <p>This is our last email about your trial. Your TradeX account stays open, with everything you did in it.</p>
-                  <p>Whenever you’re ready, connect an exchange and you’re back in, with cashback and ranks from your first trade.</p>
+                  <p>Whenever you’re ready, connect an exchange and you’re back in, with the leaderboard and ranks from your first trade.</p>
                 </>
               )}
               <a className={e.cta} href={link(m.id)}>{m.cta}</a>

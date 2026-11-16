@@ -2,8 +2,8 @@
 
 /**
  * Flow A · A-06 · Why connect an exchange (step 5 of 6).
- * Canvas requirements: explain the connect step before the ask: how cashback works, that it's safe, no API keys.
- * 3-step visual (trade → volume tracked → cashback paid), safety line (TradeX never holds your funds or keys),
+ * Canvas requirements: explain the connect step before the ask: why TradeX needs the trading volume (leaderboard + ranks), that it's safe, no API keys.
+ * 3-step visual (trade → volume tracked → leaderboard and ranks), safety line (TradeX never holds your funds or keys),
  * FAQ accordion, CTA "Connect exchange" with "Explore first" as the secondary (counts as skip).
  * Events: connect_explainer_viewed, connect_explainer_skipped.
  */
@@ -17,17 +17,17 @@ import { stepProps, track } from '@/lib/track';
 const P = stepProps('why_connect');
 
 const STEPS = [
-  // Icons from the Figma icon library (12:339): Chart--candlestick, Data--view, Money.
+  // Icons from the Figma icon library (12:339): Chart--candlestick, Data--view, Trophy.
   { icon: 'chart-candlestick', title: 'You trade', text: 'On Bitunix or Pionex, with an account opened through TradeX.' },
   { icon: 'data-view', title: 'We see your volume', text: 'The exchange tells TradeX how much you traded. Nothing else.' },
-  { icon: 'money', title: 'You get paid back', text: 'Cashback lands every month, and your rank goes up.' }
+  { icon: 'trophy', title: 'You rank up', text: 'Your volume ranks you on the leaderboard and unlocks rewards.' }
 ];
 
 const FAQ = [
-  { q: 'Why does TradeX need an exchange?', a: 'TradeX doesn’t run trades itself. Your trades happen on the exchange, and TradeX uses your trading volume to pay cashback and move you up the ranks.' },
+  { q: 'Why does TradeX need an exchange?', a: 'TradeX doesn’t run trades itself. Your trades happen on the exchange, and TradeX needs your trading volume to place you on the monthly leaderboard and move you up the ranks. Higher ranks unlock exclusive rewards, like tools and classes.' },
   { q: 'Is my money safe?', a: 'Your money stays on the exchange, in your own account. TradeX never holds your funds and never asks for API keys or passwords.' },
   { q: 'What does TradeX see?', a: 'Only the trading volume of the account you open through TradeX. It can’t trade, deposit or withdraw for you.' },
-  { q: 'I already have a Bitunix or Pionex account.', a: 'Only accounts opened through TradeX earn cashback. On the next screen we show you the simplest way to get one.' },
+  { q: 'I already have a Bitunix or Pionex account.', a: 'Only accounts opened through TradeX count for the leaderboard and ranks. On the next screen we show you the simplest way to get one.' },
   { q: 'How long does it take?', a: 'About 10 minutes, including the exchange’s ID check. We guide you through every step and save your progress.' }
 ];
 
@@ -59,7 +59,7 @@ export default function WhyConnect() {
         <div className={`${s.centerContent} ${s.medium}`}>
           <div className={s.intro}>
             <h1 className={s.title}>Why connect an exchange?</h1>
-            <p className={s.lead}>It’s how your trades turn into cashback and ranks.</p>
+            <p className={s.lead}>TradeX needs your trading volume to rank you and unlock your rewards.</p>
           </div>
 
           <ol className={s.flowSteps}>

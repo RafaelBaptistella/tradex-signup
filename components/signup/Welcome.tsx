@@ -2,7 +2,7 @@
 
 /**
  * Flow A · A-01 · Welcome · what you get (step 0 of 6).
- * Canvas requirements: benefit blocks (cashback on every trade, 70h+ courses, 10-rank system,
+ * Canvas requirements: benefit blocks (monthly leaderboard rewards, 70h+ courses, 10-rank system,
  * Discord + daily live trading, €0 platform fees), social proof (8,432 active traders),
  * progress bar at step 0 of 6, CTA "Kostenlos starten" (English UI: "Start for free").
  * Events: register_page_viewed {brand, utm_source, utm_campaign, ref_link}, guided_welcome_viewed.
@@ -11,16 +11,17 @@
 import Image from 'next/image';
 import { useEffect, useRef } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { StepHeader, PrimaryButton, HelpButton, styles as s } from './parts';
+import { StepHeader, PrimaryButton, HelpButton, Lines, styles as s } from './parts';
 import { SIGNUP_STEPS } from '@/lib/flow';
 import { setFlow, rememberBrand, stepProps, track } from '@/lib/track';
 
 const BENEFITS = [
-  { key: 'cashback', title: 'Cashback on every trade', text: 'Part of your trading fees comes back to you every month.' },
-  { key: 'courses', title: '70h+ of courses', text: 'From your first trade to advanced strategies, at your own pace.' },
-  { key: 'ranks', title: '10 ranks to climb', text: 'Each rank unlocks more tools, calls and rewards.' },
-  { key: 'community', title: 'Discord + daily live trading', text: 'Trade alongside the community and the coaches every day.' },
-  { key: 'fees', title: '€0 platform fees', text: 'TradeX is free. You only pay the exchange’s usual fees.' }
+  // Icons from the Figma icon library (12:339): Trophy, Education, Skill-level--advanced, Forum, Currency--euro.
+  { key: 'rewards', icon: 'trophy', title: 'Monthly rewards for top traders', text: 'Your trading volume puts you on the leaderboard. Each month, the top traders share a prize pool.' },
+  { key: 'courses', icon: 'education', title: '70h+ of courses', text: 'From your first trade to advanced strategies, at your own pace.' },
+  { key: 'ranks', icon: 'skill-level', title: '10 ranks to climb', text: 'Your volume moves you up. Each rank unlocks exclusive rewards, like tools and classes.' },
+  { key: 'community', icon: 'forum', title: 'Discord + daily live trading', text: 'Trade alongside the community and the coaches every day.' },
+  { key: 'fees', icon: 'currency-euro', title: '€0 platform fees', text: 'TradeX is free. You only pay the exchange’s usual fees.' }
 ];
 
 /** Placeholder until marketing confirms the live number. */
@@ -59,17 +60,17 @@ export default function Welcome() {
         <div className={`${s.centerContent} ${s.wide}`}>
           <div className={s.centerIntro}>
             <Image src="/signup/logo-tradex.svg" alt="TradeX" width={98} height={24} priority />
-            <h1 className={`${s.title} ${s.titleTop}`}>Trade, learn and get paid back</h1>
+            <h1 className={`${s.title} ${s.titleTop}`}>Trade, learn and get rewarded</h1>
             <p className={s.lead}>Everything you get with a free TradeX account.</p>
           </div>
 
           <ul className={s.welcomeGrid}>
             {BENEFITS.map((b, i) => (
               <li key={b.key} className={`${s.welcomeCard} ${i === 0 ? s.welcomeCardLead : ''}`}>
-                <Image src="/signup/check.svg" alt="" width={16} height={16} />
+                <span className={s.iconTile}><Image src={`/signup/icons/${b.icon}.svg`} alt="" width={20} height={20} /></span>
                 <div>
                   <h2 className={s.welcomeCardTitle}>{b.title}</h2>
-                  <p className={s.welcomeCardText}>{b.text}</p>
+                  <p className={s.welcomeCardText}><Lines text={b.text} /></p>
                 </div>
               </li>
             ))}

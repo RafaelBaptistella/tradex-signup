@@ -22,8 +22,8 @@ export async function submitUid(uid: string): Promise<UidResult> {
   return uid === '111111111' ? 'already_used' : 'ok';
 }
 
-/** Demo rule: taken@example.com already has an account. */
-export async function register(email: string, _password: string): Promise<RegisterResult> {
+/** Demo rule: taken@example.com already has an account. No password: login is always an email code (2FA). */
+export async function register(email: string): Promise<RegisterResult> {
   await wait(500);
   return email.trim().toLowerCase() === 'taken@example.com' ? 'email_taken' : 'ok';
 }

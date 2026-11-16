@@ -3,10 +3,11 @@
 /**
  * Flow A · A-04 · About you (step 3 of 6).
  * Canvas requirements: 2-3 quick questions to personalize the next screens: experience level
- * (new / some / pro), goal (learn, cashback, community), already trade on an exchange? which one.
+ * (new / some / pro), goal (learn, leaderboard rewards, community; value 'cashback' kept for tracking), already trade on an exchange? which one.
  * Event: profile_answered {level, goal, current_exchange}.
  * Answers are kept for the session (tx_profile) and drive the A-07 recommendation and A-05.
  */
+import Image from 'next/image';
 import { useEffect, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { StepHeader, PrimaryButton, HelpButton, styles as s } from './parts';
@@ -15,7 +16,7 @@ import { stepProps, track } from '@/lib/track';
 import type { Profile } from '@/lib/exchanges';
 import { VERIFIED_KEY } from './VerifyEmail';
 
-type Q = { key: keyof Profile; label: string; options: { value: string; title: string; hint?: string }[] };
+type Q = { key: keyof Profile; label: string; options: { value: string; title: string; hint?: string; logo?: string }[] };
 
 const QUESTIONS: Q[] = [
   { key: 'level', label: 'How much have you traded?', options: [
@@ -25,13 +26,13 @@ const QUESTIONS: Q[] = [
   ] },
   { key: 'goal', label: 'What do you want from TradeX first?', options: [
     { value: 'learn', title: 'Learn to trade' },
-    { value: 'cashback', title: 'Earn cashback' },
+    { value: 'cashback', title: 'Earn rewards' },
     { value: 'community', title: 'Trade with others' }
   ] },
   { key: 'current_exchange', label: 'Do you already trade on an exchange?', options: [
     { value: 'none', title: 'Not yet' },
-    { value: 'bitunix', title: 'Bitunix' },
-    { value: 'pionex', title: 'Pionex' },
+    { value: 'bitunix', title: 'Bitunix', logo: '/signup/ex-bitunix.svg' },
+    { value: 'pionex', title: 'Pionex', logo: '/signup/ex-pionex.png' },
     { value: 'other', title: 'Another one' }
   ] }
 ];
@@ -90,7 +91,7 @@ export default function AboutYou() {
                     <label key={o.value} className={`${s.choice} ${on ? s.choiceOn : ''}`}>
                       <input type="radio" className="sr-only" name={q.key} value={o.value} checked={on}
                         onChange={() => setAnswers((a) => ({ ...a, [q.key]: o.value }))} />
-                      <b>{o.title}</b>
+                      {o.logo ? <b className={s.choiceLogo}><Image src={o.logo} alt="" width={20} height={20} />{o.title}</b> : <b>{o.title}</b>}
                       {o.hint && <span>{o.hint}</span>}
                     </label>
                   );

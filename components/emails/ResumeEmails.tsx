@@ -70,7 +70,7 @@ export default function ResumeEmails() {
 function subject(id: EmailId, step: number, ex: string) {
   if (id === 'connect_resume_1h') return step ? `You’re on step ${step} of 5` : `Ready to connect ${ex}?`;
   if (id === 'connect_resume_24h') return 'Need a hand with the next step?';
-  return 'Your cashback is waiting';
+  return 'Your spot on the leaderboard is waiting';
 }
 
 function cta(id: EmailId, step: number) {
@@ -102,10 +102,10 @@ function Body({ id, step, stepName, exName, video }: { id: EmailId; step: number
   }
   return (
     <>
-      <h2>Your cashback is still waiting</h2>
+      <h2>Your spot on the leaderboard is waiting</h2>
       <p>Connect your {exName} account opened through TradeX and you get:</p>
       <ul className={e.list}>
-        <li>Cashback on every trade, paid monthly</li>
+        <li>A monthly prize pool for the top traders</li>
         <li>Your rank path, starting as a Rekrut</li>
         <li>All courses, the community and live trading</li>
       </ul>

@@ -15,7 +15,9 @@ Open http://localhost:3200. Press **P** (or the "Prototype" pill) to open the na
 
 - **A · Guided**: `/` → signup → connect exchange → `/dashboard`
 - **B · Soft lock**: `/b` → signup → locked dashboard → connect → `/b/unlocked`
-- **C · Freemium 7 days**: `/c` → signup → trial welcome → trial dashboard (`?day=1–8`) → lock wall → reactivation → `/c/unlocked`
+- **C · Freemium 7 days**: `/c` → signup → trial dashboard with one modal per day (`?day=1–8`, `&modal=0|1`; day 1 is the welcome) → lock wall → reactivation → `/c/unlocked`
+
+There is no password: signup asks only for the email, and login is always a 6-digit email code. Connect moments in B and C use the shared paywall (`components/paywall`).
 
 ## Demo values
 

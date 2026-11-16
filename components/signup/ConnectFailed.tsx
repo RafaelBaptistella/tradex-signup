@@ -89,7 +89,7 @@ export default function ConnectFailed() {
 
       <HelpButton stepKey="connect_failed">
         <h2>Why does this happen?</h2>
-        <p>Cashback only works for accounts opened with the TradeX link. If the link wasn’t used, or the code field was empty, {ex.name} can’t tell the account came from TradeX.</p>
+        <p>Only accounts opened with the TradeX link count for the leaderboard and ranks. If the link wasn’t used, or the code field was empty, {ex.name} can’t tell the account came from TradeX.</p>
       </HelpButton>
     </main>
   );

@@ -72,3 +72,6 @@ export const REGISTER_PRINT: Record<ExchangeId, { print: Print; field: string }>
     print: { desktop: '/signup/pionex/register-desktop.jpg', mobile: '/signup/pionex/register-mobile.jpg', alt: 'Pionex sign-up form with the referral code field', mark: [4.5, 55.5, 89, 11.5], mobileMark: [3.5, 55.5, 92, 11.5], mobileMasks: [[6.5, 33.5, 40, 5], [6.5, 46.5, 13, 5]] }
   }
 };
+
+/** Paywalls (B-03, B-07, C-04 day modals, C-09, C-11) let people pick the exchange; A-07 then opens with it selected. */
+export const connectPath = (flow: 'b' | 'c', exchange?: ExchangeId) => `/${flow}/connect${exchange ? `?exchange=${exchange}` : ''}`;

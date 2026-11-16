@@ -51,7 +51,7 @@ export default function Checking() {
   };
 
   return (
-    <main className={s.centerPage}>
+    <main className={`${s.centerPage} ${s.exAccent} ${ex.id === 'pionex' ? s.exPionex : s.exBitunix}`}>
       <div className={s.mountains} aria-hidden><div className={s.noise} /></div>
       <div className={s.grid} aria-hidden />
 

@@ -1,0 +1,121 @@
+/* Paywall dialog (B-03, B-07/C-05, C-04 daily modals, C-09, C-11). Mobile-paywall look in TradeX blue. */
+.overlay {
+  position: fixed; inset: 0; z-index: 30; display: flex; justify-content: center; align-items: flex-start; overflow-y: auto;
+  padding: 32px 16px; background: rgba(2, 5, 10, 0.72); -webkit-backdrop-filter: blur(6px); backdrop-filter: blur(6px);
+}
+.card {
+  --glow: 64, 199, 244;
+  position: relative; width: min(460px, 100%); margin: auto 0; overflow: hidden; outline: none;
+  display: flex; flex-direction: column; gap: 16px; padding: 16px 20px 18px; border-radius: 24px;
+  background: radial-gradient(110% 55% at 50% 0%, rgba(var(--glow), 0.34) 0%, rgba(17, 102, 166, 0.16) 38%, rgba(7, 11, 18, 0) 72%), #070b12;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 0 40px 120px rgba(0, 0, 0, 0.6), inset 0 1px 0 rgba(255, 255, 255, 0.08);
+  color: var(--tx-fg);
+}
+.wide { width: min(720px, 100%); }
+.warn { --glow: 255, 176, 72; }
+.spot { position: absolute; inset: 0 0 auto; height: 260px; pointer-events: none; background: radial-gradient(40% 70% at 50% 0%, rgba(var(--glow), 0.35), transparent 70%); }
+.curtain {
+  position: absolute; inset: 0 0 auto; height: 280px; pointer-events: none; opacity: 0.9;
+  background: repeating-linear-gradient(90deg, rgba(255, 255, 255, 0.045) 0 2px, transparent 2px 26px);
+  -webkit-mask-image: radial-gradient(55% 100% at 50% 0%, #000 0%, transparent 85%); mask-image: radial-gradient(55% 100% at 50% 0%, #000 0%, transparent 85%);
+}
+.card > * { position: relative; }
+.card > .spot, .card > .curtain { position: absolute; }
+
+/* Three columns with equal sides, so the label stays centred whatever sits left and right; it wraps when space runs out. */
+.top { display: grid; grid-template-columns: minmax(40px, 1fr) minmax(0, auto) minmax(40px, 1fr); align-items: center; gap: 12px; min-height: 40px; }
+.top > :last-child { justify-self: end; }
+.topSpacer { width: 40px; }
+.close {
+  width: 40px; height: 40px; flex: none; display: grid; place-items: center; padding: 0; border-radius: 50%;
+  border: 1px solid rgba(255, 255, 255, 0.1); background: rgba(255, 255, 255, 0.08); color: var(--tx-fg); cursor: pointer;
+}
+.close:hover { background: rgba(255, 255, 255, 0.14); }
+.label { display: inline-flex; align-items: center; justify-content: center; gap: 6px; text-align: center; text-wrap: balance; line-height: 1.3; font-size: 14px; font-weight: 500; color: var(--tx-fg-soft); }
+.chip {
+  display: inline-flex; align-items: center; gap: 6px; height: 32px; padding: 0 12px; border-radius: 99px; white-space: nowrap;
+  background: rgba(var(--glow), 0.16); border: 1px solid rgba(var(--glow), 0.4); font-size: 13px; font-weight: 500;
+}
+
+.art { position: relative; height: 132px; display: grid; place-items: center; margin-top: -8px; }
+.gem { width: 132px; height: 132px; object-fit: contain; filter: drop-shadow(0 0 36px rgba(var(--glow), 0.55)); animation: float 6s ease-in-out infinite; }
+.forma { width: auto; height: 170px; object-fit: contain; mix-blend-mode: screen; animation: float 6s ease-in-out infinite;
+  -webkit-mask-image: radial-gradient(closest-side, #000 55%, transparent 100%); mask-image: radial-gradient(closest-side, #000 55%, transparent 100%); }
+.spark { position: absolute; width: 22px; height: 22px; background: #eaf8ff; clip-path: polygon(50% 0, 61% 39%, 100% 50%, 61% 61%, 50% 100%, 39% 61%, 0 50%, 39% 39%); filter: drop-shadow(0 0 8px rgba(var(--glow), 0.9)); }
+.sparkA { top: 6px; left: calc(50% + 62px); }
+.sparkB { bottom: 18px; left: calc(50% - 86px); width: 14px; height: 14px; opacity: 0.8; }
+@keyframes float { 50% { transform: translateY(-6px); } }
+@media (prefers-reduced-motion: reduce) { .gem, .forma { animation: none; } }
+
+.head { display: flex; flex-direction: column; gap: 6px; text-align: center; }
+.title { margin: 0; font-size: 28px; font-weight: 500; line-height: 1.2; letter-spacing: -0.01em; text-wrap: balance; }
+.lead { margin: 0; font-size: 15px; line-height: 1.5; color: var(--tx-fg-muted); text-wrap: pretty; }
+
+.sections { display: grid; gap: 10px; }
+.sectionsTwo { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.section { display: flex; flex-direction: column; gap: 8px; }
+.sectionTitle { margin: 0; padding-left: 4px; font-size: 13px; font-weight: 500; color: var(--tx-fg-muted); }
+.list {
+  margin: 0; padding: 6px; list-style: none; display: flex; flex-direction: column; gap: 2px; flex: 1;
+  border-radius: 16px; background: rgba(255, 255, 255, 0.04); border: 1px solid rgba(255, 255, 255, 0.08);
+}
+.list li { display: flex; align-items: center; gap: 12px; padding: 6px; font-size: 14px; line-height: 1.4; }
+.tile { width: 32px; height: 32px; flex: none; display: grid; place-items: center; border-radius: 10px; background: rgba(116, 211, 251, 0.1); border: 1px solid rgba(116, 211, 251, 0.18); }
+.itemText { flex: 1; text-wrap: pretty; }
+.itemCheck { flex: none; opacity: 0.7; }
+.itemMuted { color: var(--tx-fg-muted); }
+.itemMuted .tile { background: rgba(255, 255, 255, 0.05); border-color: rgba(255, 255, 255, 0.1); }
+
+/* Exchange accents, as on A-07. */
+.exBitunix { --ex: #96e556; --ex-rgb: 150, 229, 86; }
+.exPionex { --ex: #ff9428; --ex-rgb: 255, 148, 40; }
+.options { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+.option {
+  position: relative; display: flex; flex-direction: column; align-items: flex-start; gap: 2px; padding: 14px; border-radius: 16px; text-align: left;
+  background: rgba(255, 255, 255, 0.04); border: 1px solid rgba(255, 255, 255, 0.1); color: var(--tx-fg); font: inherit; cursor: pointer;
+}
+.option:hover { background: rgba(255, 255, 255, 0.07); }
+.option:focus-visible { outline: 2px solid var(--ex); outline-offset: 2px; }
+.optionOn, .optionOn:hover { border-color: var(--ex); background: linear-gradient(180deg, rgba(var(--ex-rgb), 0.22) 0%, rgba(var(--ex-rgb), 0.04) 100%); }
+.optionHead { display: flex; align-items: center; gap: 8px; font-size: 14px; color: var(--tx-fg-soft); }
+.optionLogo { width: 20px; height: 20px; object-fit: contain; }
+.optionPool { margin-top: 6px; font-size: 22px; font-weight: 600; line-height: 1.2; }
+.optionNote { font-size: 13px; color: var(--tx-fg-muted); }
+.optionBadge {
+  position: absolute; top: -10px; right: 10px; padding: 3px 10px; border-radius: 99px; transform: rotate(4deg);
+  background: linear-gradient(90deg, var(--ex), color-mix(in srgb, var(--ex) 60%, #fff)); color: #071006; font-size: 11px; font-weight: 600;
+  box-shadow: 0 4px 14px rgba(var(--ex-rgb), 0.45);
+}
+
+.actions { display: flex; flex-direction: column; align-items: center; gap: 4px; }
+.cta {
+  width: 100%; height: 52px; border: 0; border-radius: 14px; cursor: pointer; font: inherit; font-size: 17px; font-weight: 600; color: #03121c;
+  background: linear-gradient(180deg, #a6e6ff 0%, #40c7f4 55%, #1f9fd8 100%);
+  box-shadow: 0 10px 30px rgba(64, 199, 244, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.6);
+}
+.ctaEx { background: linear-gradient(180deg, color-mix(in srgb, var(--ex) 55%, #fff) 0%, var(--ex) 60%, color-mix(in srgb, var(--ex) 80%, #000) 100%); box-shadow: 0 10px 30px rgba(var(--ex-rgb), 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.6); color: #0b0f06; }
+.cta:hover { filter: brightness(1.06); }
+.cta:focus-visible { outline: 2px solid #fff; outline-offset: 3px; }
+.secondary { height: 40px; padding: 0 16px; border: 0; background: none; color: var(--tx-fg-soft); font: inherit; font-size: 15px; font-weight: 500; cursor: pointer; }
+.secondary:hover { color: var(--tx-fg); }
+.footer { display: flex; flex-direction: column; align-items: center; gap: 6px; font-size: 13px; line-height: 1.5; color: var(--tx-fg-muted); text-align: center; }
+.footer a { color: var(--tx-fg-soft); text-decoration: underline; text-underline-offset: 3px; }
+.links { display: flex; gap: 10px; justify-content: center; }
+
+/* Small blocks some paywalls add (timeline, login form). */
+.timeline { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
+.timeline li { list-style: none; padding: 10px 12px; border-radius: 12px; background: rgba(255, 255, 255, 0.04); border: 1px solid rgba(255, 255, 255, 0.08); font-size: 13px; line-height: 1.4; color: var(--tx-fg-muted); }
+.timeline li b { display: block; color: var(--tx-fg); font-weight: 500; font-size: 14px; }
+.timeline li:first-child { border-color: rgba(116, 211, 251, 0.45); background: rgba(116, 211, 251, 0.08); }
+.timelineList { margin: 0; padding: 0; }
+.form { display: flex; flex-direction: column; gap: 12px; text-align: left; }
+
+@media (max-width: 640px) {
+  .overlay { padding: 12px; }
+  .sectionsTwo, .timeline { grid-template-columns: 1fr; }
+  .title { font-size: 24px; }
+}
+
+/* Page variant (C-11): the card sits centred on the mountain background. */
+.page { position: relative; z-index: 1; min-height: 100vh; display: flex; justify-content: center; align-items: center; padding: 32px 16px; }

@@ -157,3 +157,23 @@
 /* C-07: banner turns amber on trial days 6 and 7, matching the countdown chip. */
 .bannerSoon { border-color: rgba(255, 196, 92, 0.5); background: linear-gradient(90deg, rgba(255, 196, 92, 0.16), rgba(255, 196, 92, 0.04)); }
 .bannerSoon .bannerIcon { background: rgba(255, 196, 92, 0.2); }
+
+/* C-04: the trial card lives in the sidebar (it replaced the top banner). Amber when 2 days or fewer are left. */
+.trialCard {
+  --t: 64, 199, 244;
+  display: flex; flex-direction: column; gap: 8px; margin: 0 12px; padding: 14px; border-radius: 12px;
+  border: 1px solid rgba(var(--t), 0.4); background: linear-gradient(180deg, rgba(var(--t), 0.18), rgba(var(--t), 0.04));
+}
+.trialCardSoon { --t: 255, 196, 92; }
+.trialCardHead { display: flex; align-items: center; gap: 8px; }
+.trialCardIcon { width: 28px; height: 28px; display: grid; place-items: center; border-radius: 50%; background: rgba(var(--t), 0.2); }
+.trialCardKicker { font-size: 13px; font-weight: 600; }
+.trialSegs { display: grid; grid-template-columns: repeat(7, 1fr); gap: 3px; }
+.trialSegs span { height: 4px; border-radius: 2px; background: rgba(255, 255, 255, 0.14); }
+.trialSegs .trialSegOn { background: rgb(var(--t)); }
+.trialCardTitle { margin: 2px 0 0; font-size: 14px; font-weight: 600; line-height: 1.35; text-wrap: balance; }
+.trialCardText { margin: 0; font-size: 13px; line-height: 1.45; color: rgba(255, 255, 255, 0.7); text-wrap: pretty; }
+.trialCardBtn { height: 36px; margin-top: 4px; border: 0; border-radius: 8px; background: #fff; color: #000; font: inherit; font-size: 14px; font-weight: 500; cursor: pointer; }
+.trialCardBtn:hover { background: rgba(255, 255, 255, 0.9); }
+.mobileOnly { display: none; }
+@media (max-width: 1023px) { .mobileOnly { display: flex; } }

@@ -35,7 +35,10 @@ export default function ChooseExchange() {
     if (viewed.current) return;
     viewed.current = true;
     const r = recommend(readProfile());
-    setPick(r); setSelected(r.id);
+    setPick(r);
+    // A paywall (B-03, B-07, C-04, C-09, C-11) may have picked the exchange already.
+    const chosen = new URLSearchParams(window.location.search).get('pick');
+    setSelected(chosen === 'bitunix' || chosen === 'pionex' ? chosen : r.id);
     track('signup_step_viewed', P);
     // In flows B and C the connect started on the screen that sent people here (B-03 modal, C-03, locks…); A-07 only logs the view.
     const flow = currentFlow();
@@ -82,7 +85,7 @@ export default function ChooseExchange() {
         <div className={`${s.centerContent} ${s.wide}`}>
           <div className={s.centerIntro}>
             <h1 className={s.title}>Choose your exchange</h1>
-            <p className={s.text}><Lines text="Your trades run on a partner exchange. TradeX follows your trading volume and pays you cashback. We picked one for you; you can change it." /></p>
+            <p className={s.text}><Lines text="Your trades run on a partner exchange. TradeX counts your volume to rank you and unlock rewards. We picked one for you; you can change it." /></p>
           </div>
 
           <button type="button" className={s.video} onClick={playVideo} aria-expanded={videoOpen}>
@@ -114,7 +117,7 @@ export default function ChooseExchange() {
             <>
               <div className={s.modalLogos} aria-hidden><span className={s.logoRing}><Image src={current.logo.src} alt="" width={current.logo.width} height={current.logo.height} /></span></div>
               <h2 id="sheet-title" className={s.modalTitle}>Do you already have a {current.name} account?</h2>
-              <p className={`${s.text} ${s.center}`}>Only accounts opened through TradeX earn cashback, so we need to know.</p>
+              <p className={`${s.text} ${s.center}`}>Only accounts opened through TradeX count for the leaderboard, so we need to know.</p>
               <div className={s.optionList}>
                 <button type="button" className={s.option} onClick={() => answer(false)}><b>No, I’m new to {current.name}</b><span>We’ll guide you through opening one.</span></button>
                 <button type="button" className={s.option} onClick={() => answer(true)}><b>Yes, I already have one</b><span>We’ll show you what to do.</span></button>
@@ -122,7 +125,7 @@ export default function ChooseExchange() {
             </>
           ) : (
             <>
-              <h2 id="sheet-title" className={s.modalTitle}>Cashback only tracks accounts opened through TradeX</h2>
+              <h2 id="sheet-title" className={s.modalTitle}>The leaderboard only counts accounts opened through TradeX</h2>
               <p className={`${s.text} ${s.center}`}>Your current {current.name} account stays exactly as it is. You can keep using it.</p>
               <div className={s.optionList}>
                 <button type="button" className={`${s.option} ${s.optionRecommended}`} onClick={() => choose('other_exchange')}>
@@ -151,7 +154,7 @@ export default function ChooseExchange() {
 function ExchangeCard({ ex, selected, badge, onSelect }: { ex: Exchange; selected: boolean; badge?: string; onSelect: () => void }) {
   const rows: [string, string][] = [['Best for', ex.compare.bestFor], ['Welcome bonus', ex.compare.welcome], ['Also', ex.compare.extra]];
   return (
-    <button type="button" role="radio" aria-checked={selected} className={`${s.card} ${s.cardSelectable} ${selected ? s.cardSelected : ''} ${ex.id === 'pionex' ? s.cardPionex : ''}`} onClick={onSelect}>
+    <button type="button" role="radio" aria-checked={selected} className={`${s.card} ${s.cardSelectable} ${selected ? s.cardSelected : ''} ${s.cardEx} ${ex.id === 'pionex' ? s.exPionex : s.exBitunix}`} onClick={onSelect}>
       {badge && <span className={s.badge}>{badge}</span>}
       <span className={s.cardBody}>
         <span className={s.cardHead}>
@@ -159,7 +162,7 @@ function ExchangeCard({ ex, selected, badge, onSelect }: { ex: Exchange; selecte
             <span className={s.cardLogo}><Image src={ex.logo.src} alt="" width={ex.logo.width} height={ex.logo.height} /></span>
             {ex.name}
           </span>
-          <span className={s.cardPool}><b>{ex.pool}</b><span>Monthly cashback pool</span></span>
+          <span className={s.cardPool}><b>{ex.pool}</b><span>Monthly prize pool</span></span>
         </span>
         <Image className={s.cardDivider} src="/signup/divider.svg" alt="" width={243} height={1} />
         <dl className={s.compare}>

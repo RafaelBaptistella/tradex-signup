@@ -2,7 +2,7 @@
 
 /**
  * Flow A · A-17 · Connected · what's next.
- * Canvas requirements: success state with the exchange logo; unlocked: cashback, ranking, all courses;
+ * Canvas requirements: success state with the exchange logo; unlocked: monthly rewards (leaderboard), ranking, all courses;
  * next steps: first course, join Discord, first trade. Event: exchange_connected {exchange, source: guided}.
  * Built on the Figma "Welcome to TradeX!" modal (Live Pages → Welcome Screens 1413:9899) over the
  * "Beginner" dashboard (1787:24442), with the Rekrut rank card (first rank, $0 volume).
@@ -26,11 +26,11 @@ export default function Connected() {
     track('exchange_connected', { exchange: ex.id, source: { a: 'guided', b: 'softlock', c: 'trial' }[currentFlow()] });
   }, [ex.id]);
 
-  const unlocked = ['Cashback on every trade', 'Ranking: you start as a Rekrut', 'All courses, community and live trading'];
+  const unlocked = ['The monthly leaderboard and its prize pool', 'Ranking: you start as a Rekrut', 'All courses, community and live trading'];
   const next = [
     { text: 'Start your first course', hint: 'Beginners start with the basics.' },
     { text: 'Join the Discord', hint: 'Daily live trading with the coaches.' },
-    { text: `Make your first trade on ${ex.name}`, hint: 'Your cashback and ranking start counting.' }
+    { text: `Make your first trade on ${ex.name}`, hint: 'Your volume starts counting for the leaderboard and ranks.' }
   ];
 
   return (

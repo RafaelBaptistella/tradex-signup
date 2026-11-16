@@ -35,7 +35,7 @@ function checkFormat(raw: string, codes: string[], exId: string): Problem | null
   return null;
 }
 
-const UNLOCKS = ['Cashback on every trade, paid monthly', 'Your rank path starts at rank 1', 'Courses, community and live trading'];
+const UNLOCKS = ['A spot on the monthly leaderboard', 'Your rank path starts at rank 1', 'Courses, community and live trading'];
 
 export default function PasteUid() {
   const router = useRouter();
