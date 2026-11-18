@@ -17,8 +17,12 @@ import { StepHeader, TextField, PrimaryButton, HelpButton, SignupVisual, Lines, 
 import { SIGNUP_STEPS } from '@/lib/flow';
 import { setFlow, rememberBrand, stepProps, track } from '@/lib/track';
 import { register } from '@/lib/mockApi';
+import { useEU } from '@/lib/compliance';
 
 const EMAIL = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
+
+/** EU rules: the opt-in for marketing emails (resume, soft-lock, trial nudges, reactivation), kept for the session. */
+export const MARKETING_KEY = 'tx_marketing';
 
 /**
  * What changes per flow. A starts after the A-01 welcome; B and C have no welcome, so B-01 and C-01 are the entry.
@@ -40,6 +44,8 @@ export default function CreateAccount({ flow = 'a' }: { flow?: keyof typeof FLOW
   const params = useSearchParams();
   const [email, setEmail] = useState(() => params.get('email') || '');
   const [terms, setTerms] = useState(false);
+  const [marketing, setMarketing] = useState(false);
+  const eu = useEU();
   const [errors, setErrors] = useState<Errors>({});
   const [busy, setBusy] = useState(false);
   const viewed = useRef(false);
@@ -61,12 +67,13 @@ export default function CreateAccount({ flow = 'a' }: { flow?: keyof typeof FLOW
     e.preventDefault();
     const next: Errors = {};
     if (!EMAIL.test(email.trim())) { next.email = 'Enter an email address like name@example.com.'; fieldError('email', email ? 'invalid_format' : 'missing'); }
-    if (!terms) { next.terms = 'Please accept the terms to continue.'; fieldError('terms', 'not_accepted'); }
+    if (!terms) { next.terms = eu ? 'Please confirm you’re 18 or older and accept the Terms.' : 'Please accept the terms to continue.'; fieldError('terms', 'not_accepted'); }
     setErrors(next);
     if (Object.keys(next).length) return;
 
     setBusy(true);
-    track('register_submitted', { ...stepProps('account'), method: 'email' });
+    track('register_submitted', { ...stepProps('account'), method: 'email', ...(eu ? { marketing_opt_in: marketing } : {}) });
+    try { sessionStorage.setItem(MARKETING_KEY, eu ? (marketing ? '1' : '0') : '1'); } catch { /* no emails beyond service notices */ }
     const result = await register(email);
     if (result === 'email_taken') {
       setBusy(false);
@@ -107,10 +114,21 @@ export default function CreateAccount({ flow = 'a' }: { flow?: keyof typeof FLOW
               <div>
                 <label className={s.checkRow}>
                   <input type="checkbox" checked={terms} onChange={(e) => { setTerms(e.target.checked); setErrors((x) => ({ ...x, terms: undefined })); }} aria-invalid={Boolean(errors.terms)} />
-                  <span>I agree to the <a className={s.link} href="/terms" target="_blank" rel="noreferrer">Terms</a> and the <a className={s.link} href="/privacy" target="_blank" rel="noreferrer">Privacy Policy</a>.</span>
+                  {eu
+                    ? <span>I’m 18 or older and I accept the <a className={s.link} href="/terms" target="_blank" rel="noreferrer">Terms</a>.</span>
+                    : <span>I agree to the <a className={s.link} href="/terms" target="_blank" rel="noreferrer">Terms</a> and the <a className={s.link} href="/privacy" target="_blank" rel="noreferrer">Privacy Policy</a>.</span>}
                 </label>
                 {errors.terms && <p className={s.error} role="alert">{errors.terms}</p>}
               </div>
+
+              {eu && (
+                <label className={s.checkRow}>
+                  <input type="checkbox" checked={marketing} onChange={(e) => setMarketing(e.target.checked)} />
+                  <span>Email me tips and reminders about TradeX. <span className={s.checkHint}>Optional. You can unsubscribe any time.</span></span>
+                </label>
+              )}
+
+              {eu && <p className={`${s.fieldNote} ${s.fieldHint}`}>Read how we use your data in the <a className={s.link} href="/privacy" target="_blank" rel="noreferrer">Privacy Policy</a>.</p>}
 
               <PrimaryButton type="submit" disabled={busy}>{busy ? 'Creating your account…' : 'Create account'}</PrimaryButton>
             </div>
@@ -136,7 +154,7 @@ export default function CreateAccount({ flow = 'a' }: { flow?: keyof typeof FLOW
       <SignupVisual>
         <aside className={s.sideBenefit} aria-label="Main benefit">
           <p className={s.sideBenefitKicker}>Monthly rewards for top traders</p>
-          <p className={s.sideBenefitText}>Trade on Bitunix or Pionex through TradeX to climb the leaderboard. Each month, the top traders share a prize pool.</p>
+          <p className={s.sideBenefitText}>{eu ? 'Trade on Pionex through TradeX to climb the leaderboard. Each month, the top traders share a prize pool.' : 'Trade on Bitunix or Pionex through TradeX to climb the leaderboard. Each month, the top traders share a prize pool.'}</p>
         </aside>
       </SignupVisual>
 

@@ -119,3 +119,6 @@
 
 /* Page variant (C-11): the card sits centred on the mountain background. */
 .page { position: relative; z-index: 1; min-height: 100vh; display: flex; justify-content: center; align-items: center; padding: 32px 16px; }
+
+/* EU rules: an exchange EU residents can't open (MiCA). */
+.optionOff, .optionOff:hover { opacity: 0.45; cursor: not-allowed; background: rgba(255, 255, 255, 0.03); }

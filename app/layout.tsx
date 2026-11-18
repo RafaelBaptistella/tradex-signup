@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from 'next';
 import { Geist } from 'next/font/google';
 import { Suspense } from 'react';
 import Navigator from '@/components/prototype/Navigator';
+import ConsentBanner from '@/components/consent/ConsentBanner';
 import './globals.css';
 
 const geist = Geist({ subsets: ['latin'], weight: ['400', '500'], variable: '--font-geist' });
@@ -18,6 +19,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     <html lang="en" className={geist.variable}>
       <body>
         {children}
+        <ConsentBanner />
         <Suspense fallback={null}><Navigator /></Suspense>
       </body>
     </html>

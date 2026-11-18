@@ -4,6 +4,7 @@ import Image from 'next/image';
 import { useState, type ButtonHTMLAttributes, type InputHTMLAttributes, type ReactNode } from 'react';
 import s from './signup.module.css';
 import { track } from '@/lib/track';
+import { COMMISSION, RISK } from '@/lib/compliance';
 
 /** Back · progress segments · "STEP n OF m" (Figma 645:22526). Step 0 is the welcome: no segment lit yet. */
 export function StepHeader({ step, total, backHref, onBack }: { step: number; total: number; backHref?: string; onBack?: () => void }) {
@@ -122,3 +123,13 @@ export function SignupVisual({ children }: { children?: ReactNode }) {
 }
 
 export { s as styles };
+
+/** EU rules: risk warning, how TradeX earns, and the prize pool rules. Shown wherever we ask people to trade or connect. */
+export function Disclosure({ left }: { left?: boolean }) {
+  return (
+    <p className={`${s.legal} ${left ? s.legalLeft : ''}`}>
+      <Lines text={`${RISK} ${COMMISSION}`} />
+      <span className={s.line}><a href="/prize-pool-rules" target="_blank" rel="noreferrer">Prize pool rules</a></span>
+    </p>
+  );
+}

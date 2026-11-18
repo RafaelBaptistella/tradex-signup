@@ -11,11 +11,13 @@ import Image from 'next/image';
 import { useEffect, useRef } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { PrimaryButton, Lines, styles as s } from './parts';
+import { RISK, useEU } from '@/lib/compliance';
 import { exchangeById } from '@/lib/exchanges';
 import { currentFlow, track } from '@/lib/track';
 
 export default function Connected() {
   const router = useRouter();
+  const eu = useEU();
   const params = useSearchParams();
   const ex = exchangeById(params.get('exchange')) ?? exchangeById('bitunix')!;
   const sent = useRef(false);
@@ -85,6 +87,7 @@ export default function Connected() {
 
         <div className={s.welcomeFooter}>
           <PrimaryButton onClick={() => router.push(`${{ a: '/dashboard', b: '/b/unlocked', c: '/c/unlocked' }[currentFlow()]}?exchange=${ex.id}`)}>Open TradeX</PrimaryButton>
+          {eu && <p className={s.legal}><Lines text={RISK} /></p>}
         </div>
       </div>
     </main>

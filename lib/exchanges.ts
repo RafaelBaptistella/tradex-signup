@@ -7,6 +7,8 @@ export type Exchange = {
   logo: { src: string; width: number; height: number };
   /** Plain-words comparison rows for A-07 (label → value). Only facts confirmed by César, Nov 11, 2026. */
   compare: { bestFor: string; welcome: string; extra: string };
+  /** EU rules: the same rows with the welcome offers mentioned more quietly (no amounts, no futures bonus). */
+  compareEU: { bestFor: string; welcome: string; extra: string };
 };
 
 export const EXCHANGES: Exchange[] = [
@@ -17,6 +19,11 @@ export const EXCHANGES: Exchange[] = [
       bestFor: 'Getting started. Most TradeX members use it.',
       welcome: '$10 when you sign up, plus 20% on your deposit',
       extra: '20% lower trading fees'
+    },
+    compareEU: {
+      bestFor: 'Getting started. Most TradeX members use it.',
+      welcome: 'Welcome rewards for new accounts',
+      extra: '20% lower trading fees'
     }
   },
   {
@@ -26,6 +33,11 @@ export const EXCHANGES: Exchange[] = [
       bestFor: 'Letting bots trade for you',
       welcome: '75 USDT after the ID check, plus up to 1,000 USDT on your deposit',
       extra: 'Free trading bots and a 100 USDT futures grid bonus'
+    },
+    compareEU: {
+      bestFor: 'Letting bots trade for you',
+      welcome: 'Welcome rewards for new accounts, on Pionex’s terms',
+      extra: 'Free trading bots, with rewards for trying them'
     }
   }
 ];
@@ -40,7 +52,9 @@ export function readProfile(): Profile {
 }
 
 /** Our pick and the one-line reason shown on its badge. */
-export function recommend(p: Profile): { id: ExchangeId; reason: string } {
+export function recommend(p: Profile, eu = false): { id: ExchangeId; reason: string } {
+  // EU rules: Bitunix isn't authorised under MiCA, so Pionex is the only pick (see lib/compliance.ts).
+  if (eu) return { id: 'pionex', reason: 'Available in the EU' };
   if (p.current_exchange === 'bitunix') return { id: 'pionex', reason: 'You don’t use it yet' };
   if (p.current_exchange === 'pionex') return { id: 'bitunix', reason: 'You don’t use it yet' };
   if (p.level === 'pro') return { id: 'bitunix', reason: 'Lowest fees for active traders' };

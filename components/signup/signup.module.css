@@ -666,3 +666,14 @@
 .exAccent .spinnerSmall { border-color: rgba(var(--ex-rgb), 0.25); border-top-color: var(--ex); }
 .exAccent .check_done .checkMark { border-color: rgba(var(--ex-rgb), 0.6); background: rgba(var(--ex-rgb), 0.15); }
 .fieldHint { color: var(--tx-fg-muted); line-height: 1.5; }
+
+/* EU rules (compliance review, Nov 2026) */
+.checkHint { display: block; font-size: 14px; color: var(--tx-fg-muted); }
+.legal { margin: 0; font-size: 13px; line-height: 1.5; color: var(--tx-fg-muted); text-align: center; }
+.legal a { color: var(--tx-fg-soft); text-decoration: underline; text-underline-offset: 3px; }
+.legalLeft { text-align: left; }
+.cardOff { opacity: 0.45; cursor: not-allowed; }
+.cardOffNote { font-size: 13px; color: var(--tx-fg-muted); }
+.rulesList { margin: 0; padding-left: 20px; display: flex; flex-direction: column; gap: 8px; font-size: 16px; line-height: 1.5; color: var(--tx-fg-soft); }
+.rulesPage { min-height: 100vh; box-sizing: border-box; padding: 64px 24px 96px; }
+.rulesContent { max-width: 640px; margin: 0 auto; display: flex; flex-direction: column; gap: 32px; }

@@ -12,6 +12,7 @@
 import Paywall, { type PaywallItem } from '@/components/paywall/Paywall';
 import type { ExchangeId } from '@/lib/exchanges';
 import { track } from '@/lib/track';
+import { useEU } from '@/lib/compliance';
 
 export type LockedFeature = 'cashback' | 'ranking' | 'courses';
 
@@ -57,7 +58,11 @@ const CONTENT: Record<LockedFeature, Copy> = {
 };
 
 export default function LockedFeatureSheet({ feature, trialDay, onConnect, onClose }: { feature: LockedFeature; trialDay?: number; onConnect: (exchange: ExchangeId) => void; onClose: () => void }) {
-  const c = CONTENT[feature];
+  const eu = useEU();
+  // EU rules: the exchange's welcome offer is mentioned more quietly (no amounts).
+  const c = eu && feature === 'cashback'
+    ? { ...CONTENT[feature], gets: CONTENT[feature].gets.map((g) => (g.icon === 'money' ? { ...g, text: 'A welcome offer from the exchange for new accounts' } : g)) }
+    : CONTENT[feature];
   const trial = trialDay !== undefined;
   const daysLeft = trial ? Math.max(1, 8 - trialDay) : 0;
   const dismiss = () => { track('locked_feature_dismissed', { feature, ...(trial ? { trial_day: trialDay } : {}) }); onClose(); };

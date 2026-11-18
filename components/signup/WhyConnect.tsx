@@ -10,7 +10,8 @@
 import Image from 'next/image';
 import { useEffect, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { StepHeader, PrimaryButton, HelpButton, Callout, styles as s } from './parts';
+import { StepHeader, PrimaryButton, HelpButton, Callout, Disclosure, styles as s } from './parts';
+import { useEU } from '@/lib/compliance';
 import { SIGNUP_STEPS } from '@/lib/flow';
 import { stepProps, track } from '@/lib/track';
 
@@ -31,8 +32,24 @@ const FAQ = [
   { q: 'How long does it take?', a: 'About 10 minutes, including the exchange’s ID check. We guide you through every step and save your progress.' }
 ];
 
+/** EU rules: only Pionex (MiCA), the exact data the exchange shares (confirm against the affiliate feed), honest custody risk, how TradeX earns. */
+const STEPS_EU = [
+  { ...STEPS[0], text: 'On Pionex, with an account opened through TradeX.' },
+  { ...STEPS[1], text: 'The exchange shares your UID, trading volume and fees with TradeX.' },
+  STEPS[2]
+];
+const FAQ_EU = [
+  FAQ[0],
+  { q: 'Where is my money?', a: 'On the exchange, in your own account. TradeX never holds your funds and never asks for API keys or passwords. Like any company, an exchange can be hacked or fail, so only deposit what you can afford to lose.' },
+  { q: 'What does TradeX see?', a: 'Your UID, and the trading volume and fees of the account you open through TradeX. Never your ID documents. TradeX can’t trade, deposit or withdraw for you.' },
+  { q: 'How does TradeX make money?', a: 'The exchange pays TradeX a share of the fees on your trades. You pay the exchange’s usual fees, nothing extra.' },
+  { q: 'I already have a Pionex account.', a: 'Only accounts opened through TradeX count for the leaderboard and ranks. Your current account stays exactly as it is.' },
+  FAQ[4]
+];
+
 export default function WhyConnect() {
   const router = useRouter();
+  const eu = useEU();
   const [open, setOpen] = useState<number | null>(null);
   const viewed = useRef(false);
 
@@ -63,7 +80,7 @@ export default function WhyConnect() {
           </div>
 
           <ol className={s.flowSteps}>
-            {STEPS.map((st, i) => (
+            {(eu ? STEPS_EU : STEPS).map((st, i) => (
               <li key={st.title} className={s.flowStep}>
                 <div className={s.flowStepTop}>
                   <span className={s.iconTile}><Image src={`/signup/icons/${st.icon}.svg`} alt="" width={20} height={20} /></span>
@@ -80,7 +97,7 @@ export default function WhyConnect() {
           <section className={s.planBlock} aria-labelledby="faq-title">
             <h2 id="faq-title" className={s.questionLabel}>Questions people ask</h2>
             <div className={s.faq}>
-              {FAQ.map((f, i) => (
+              {(eu ? FAQ_EU : FAQ).map((f, i) => (
                 <div key={f.q} className={s.faqItem}>
                   <button type="button" className={s.faqQ} aria-expanded={open === i} aria-controls={`faq-${i}`} onClick={() => setOpen(open === i ? null : i)}>
                     {f.q}<span aria-hidden className={s.faqIcon}>{open === i ? '−' : '+'}</span>
@@ -94,6 +111,7 @@ export default function WhyConnect() {
           <div className={s.choiceActions}>
             <PrimaryButton onClick={() => router.push('/exchange')}>Connect exchange</PrimaryButton>
             <button type="button" className={s.inlineLink} onClick={explore}>Explore first</button>
+            {eu && <Disclosure />}
           </div>
         </div>
 

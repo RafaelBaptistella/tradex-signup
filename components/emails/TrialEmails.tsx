@@ -9,6 +9,8 @@
 import Image from 'next/image';
 import { EXCHANGES } from '@/lib/exchanges';
 import e from './emails.module.css';
+import { available, useEU } from '@/lib/compliance';
+import { RULES_NOTE, footer, tag } from './rules';
 
 const EMAILS = [
   { id: 'trial_d0', when: 'D0 · right after signup (trial day 1)', subject: 'Your 7 free days start now', cta: 'Start exploring', to: 'c-dashboard' },
@@ -19,17 +21,19 @@ const EMAILS = [
 const link = (id: string, to: string) => `/resume?to=${to}&email=${id}&utm_source=email&utm_campaign=${id}`;
 
 export default function TrialEmails() {
+  const eu = useEU();
   return (
     <main className={e.page}>
       <header className={e.head}>
         <p className={e.kicker}>C-06 · Trial emails · preview</p>
         <h1>Emails during the 7-day free trial</h1>
+        {eu && <p className={e.rulesNote}>{RULES_NOTE}</p>}
       </header>
 
       <div className={e.grid}>
         {EMAILS.map((m) => (
           <section key={m.id} className={e.client} aria-label={m.when}>
-            <p className={e.when}>{m.when}</p>
+            <p className={e.when}>{m.when}{eu && <span className={e.tag}>{tag(m.id)}</span>}</p>
             <div className={e.meta}>
               <p><span>From</span>TradeX</p>
               <p><span>Subject</span>{m.subject}</p>
@@ -70,7 +74,7 @@ export default function TrialEmails() {
                   <p>Today is the last day of your free trial. Connect an exchange now and nothing pauses: what you started stays open.</p>
                   <p>This month’s prize pools:</p>
                   <div className={e.pools}>
-                    {EXCHANGES.map((x) => (
+                    {EXCHANGES.filter((x) => available(x.id, eu)).map((x) => (
                       <div key={x.id}><Image src={x.logo.src} alt="" width={x.logo.width * 0.8} height={x.logo.height * 0.8} /><b>{x.pool}</b><span>{x.name} pool</span></div>
                     ))}
                   </div>
@@ -78,7 +82,7 @@ export default function TrialEmails() {
               )}
               <a className={e.cta} href={link(m.id, m.to)}>{m.cta}</a>
               <hr />
-              <p className={e.footer}>You get this email because you started a free trial on TradeX. <a href="#">Unsubscribe</a></p>
+              <p className={e.footer}>{eu ? footer(m.id) : <>You get this email because you started a free trial on TradeX.</>} <a href="#">Unsubscribe</a></p>
             </article>
           </section>
         ))}

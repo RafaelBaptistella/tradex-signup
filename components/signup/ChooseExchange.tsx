@@ -9,12 +9,14 @@
  * different email), option 2 (an exchange they don't use yet, recommended), old account stays untouched.
  * Events: exchange_connect_started {source: guided}, exchange_selected {exchange, recommended},
  * explainer_video_played {screen}, exchange_has_account {yes|no}, existing_account_notice_viewed {exchange},
- * existing_account_choice {new|other_exchange|leave}.
+ * existing_account_choice {new|other_exchange|leave|explore}.
+ * EU rules: Bitunix shows as unavailable (MiCA), Pionex is the pick, and the "new account with another email" option is gone.
  */
 import Image from 'next/image';
 import { useEffect, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { StepHeader, HelpButton, Lines, PrimaryButton, styles as s } from './parts';
+import { StepHeader, HelpButton, Lines, PrimaryButton, Disclosure, styles as s } from './parts';
+import { available, rules, useEU } from '@/lib/compliance';
 import { EXCHANGES, readProfile, recommend, type Exchange, type ExchangeId } from '@/lib/exchanges';
 import { SIGNUP_STEPS } from '@/lib/flow';
 import { currentFlow, stepProps, track } from '@/lib/track';
@@ -30,15 +32,16 @@ export default function ChooseExchange() {
   const viewed = useRef(false);
   // In flows B and C people are already inside TradeX: no 6-step signup header, and Back returns to where they came from.
   const [inApp, setInApp] = useState<null | 'b' | 'c'>(null);
+  const eu = useEU();
 
   useEffect(() => {
     if (viewed.current) return;
     viewed.current = true;
-    const r = recommend(readProfile());
+    const r = recommend(readProfile(), rules() === 'eu');
     setPick(r);
     // A paywall (B-03, B-07, C-04, C-09, C-11) may have picked the exchange already.
     const chosen = new URLSearchParams(window.location.search).get('pick');
-    setSelected(chosen === 'bitunix' || chosen === 'pionex' ? chosen : r.id);
+    setSelected((chosen === 'bitunix' || chosen === 'pionex') && available(chosen, rules() === 'eu') ? chosen : r.id);
     track('signup_step_viewed', P);
     // In flows B and C the connect started on the screen that sent people here (B-03 modal, C-03, locks…); A-07 only logs the view.
     const flow = currentFlow();
@@ -46,8 +49,16 @@ export default function ChooseExchange() {
     setInApp(flow === 'a' ? null : flow);
   }, []);
 
+  // The EU switch can flip while this screen is open: keep the pick and selection on an exchange people can open.
+  useEffect(() => {
+    const r = recommend(readProfile(), eu);
+    setPick(r);
+    setSelected((sel) => (available(sel, eu) ? sel : r.id));
+  }, [eu]);
+
   const current = EXCHANGES.find((e) => e.id === selected)!;
   const other = EXCHANGES.find((e) => e.id !== selected)!;
+  const otherOpen = available(other.id, eu);
 
   const confirm = (id: ExchangeId) => {
     setSelected(id);
@@ -62,9 +73,10 @@ export default function ChooseExchange() {
     setSheet('fresh');
   };
 
-  const choose = (choice: 'new' | 'other_exchange' | 'leave') => {
+  const choose = (choice: 'new' | 'other_exchange' | 'leave' | 'explore') => {
     track('existing_account_choice', { ...P, exchange: selected, choice });
-    if (choice === 'new') router.push(`/connect?exchange=${selected}&fresh=1`);
+    if (choice === 'explore') router.push('/explore');
+    else if (choice === 'new') router.push(`/connect?exchange=${selected}&fresh=1`);
     else if (choice === 'other_exchange') { setSelected(other.id); setSheet(null); }
     else setSheet(null);
   };
@@ -85,7 +97,7 @@ export default function ChooseExchange() {
         <div className={`${s.centerContent} ${s.wide}`}>
           <div className={s.centerIntro}>
             <h1 className={s.title}>Choose your exchange</h1>
-            <p className={s.text}><Lines text="Your trades run on a partner exchange. TradeX counts your volume to rank you and unlock rewards. We picked one for you; you can change it." /></p>
+            <p className={s.text}><Lines text={eu ? 'Your trades run on a partner exchange. TradeX counts your volume to rank you and unlock rewards.' : 'Your trades run on a partner exchange. TradeX counts your volume to rank you and unlock rewards. We picked one for you; you can change it.'} /></p>
           </div>
 
           <button type="button" className={s.video} onClick={playVideo} aria-expanded={videoOpen}>
@@ -96,23 +108,24 @@ export default function ChooseExchange() {
 
           <div className={s.cards} role="radiogroup" aria-label="Exchange">
             {EXCHANGES.map((ex) => (
-              <ExchangeCard key={ex.id} ex={ex} selected={selected === ex.id} badge={ex.id === pick.id ? pick.reason : undefined} onSelect={() => setSelected(ex.id)} />
+              <ExchangeCard key={ex.id} ex={ex} eu={eu} off={!available(ex.id, eu)} selected={selected === ex.id} badge={ex.id === pick.id ? pick.reason : undefined} onSelect={() => setSelected(ex.id)} />
             ))}
           </div>
 
           <div className={s.choiceActions}>
             <PrimaryButton onClick={() => confirm(selected)}>Continue with {current.name}</PrimaryButton>
-            <button type="button" className={s.inlineLink} onClick={() => confirm(pick.id)}>Not sure? Take our pick ({EXCHANGES.find((e) => e.id === pick.id)!.name})</button>
+            {!eu && <button type="button" className={s.inlineLink} onClick={() => confirm(pick.id)}>Not sure? Take our pick ({EXCHANGES.find((e) => e.id === pick.id)!.name})</button>}
           </div>
 
           <p className={s.reassure}><Lines text="Your money stays on the exchange. TradeX never holds your funds or your keys." /></p>
+          {eu && <Disclosure />}
         </div>
 
         <div className={s.spacer} aria-hidden />
       </div>
 
       {sheet && (
-        <Sheet title={sheet === 'ask' ? `Your ${current.name} account` : 'You’ll need a fresh account'} onClose={() => (sheet === 'fresh' ? choose('leave') : setSheet(null))}>
+        <Sheet title={sheet === 'ask' || (eu && !otherOpen) ? `Your ${current.name} account` : 'You’ll need a fresh account'} onClose={() => (sheet === 'fresh' ? choose('leave') : setSheet(null))}>
           {sheet === 'ask' ? (
             <>
               <div className={s.modalLogos} aria-hidden><span className={s.logoRing}><Image src={current.logo.src} alt="" width={current.logo.width} height={current.logo.height} /></span></div>
@@ -127,17 +140,28 @@ export default function ChooseExchange() {
             <>
               <h2 id="sheet-title" className={s.modalTitle}>The leaderboard only counts accounts opened through TradeX</h2>
               <p className={`${s.text} ${s.center}`}>Your current {current.name} account stays exactly as it is. You can keep using it.</p>
+              {eu && !otherOpen ? (
+                <div className={s.optionList}>
+                  <button type="button" className={`${s.option} ${s.optionRecommended}`} onClick={() => choose('explore')}>
+                    <b>Explore TradeX first</b>
+                    <span>Courses and community are open to you. We’ll tell you when another exchange is available in the EU.</span>
+                  </button>
+                </div>
+              ) : (
               <div className={s.optionList}>
                 <button type="button" className={`${s.option} ${s.optionRecommended}`} onClick={() => choose('other_exchange')}>
                   <span className={s.optionBadge}>Recommended</span>
                   <b>Pick {other.name} instead</b>
                   <span>An exchange you don’t use yet. Nothing to change on your side.</span>
                 </button>
-                <button type="button" className={s.option} onClick={() => choose('new')}>
-                  <b>Open a new {current.name} account</b>
-                  <span>Use a different email address. Your ID can be the same: {current.name} runs the check. We show you every step.</span>
-                </button>
+                {!eu && (
+                  <button type="button" className={s.option} onClick={() => choose('new')}>
+                    <b>Open a new {current.name} account</b>
+                    <span>Use a different email address. Your ID can be the same: {current.name} runs the check. We show you every step.</span>
+                  </button>
+                )}
               </div>
+              )}
             </>
           )}
         </Sheet>
@@ -145,16 +169,17 @@ export default function ChooseExchange() {
 
       <HelpButton stepKey="exchange_choice">
         <h2>Which exchange should I pick?</h2>
-        <p>Most TradeX members use Bitunix. Pick Pionex if you want its free trading bots. Either way, we guide you through opening the account step by step.</p>
+        <p>{eu ? 'In the EU, you can open Pionex through TradeX. Bitunix isn’t available in the EU yet. We guide you through opening the account step by step.' : 'Most TradeX members use Bitunix. Pick Pionex if you want its free trading bots. Either way, we guide you through opening the account step by step.'}</p>
       </HelpButton>
     </main>
   );
 }
 
-function ExchangeCard({ ex, selected, badge, onSelect }: { ex: Exchange; selected: boolean; badge?: string; onSelect: () => void }) {
-  const rows: [string, string][] = [['Best for', ex.compare.bestFor], ['Welcome bonus', ex.compare.welcome], ['Also', ex.compare.extra]];
+function ExchangeCard({ ex, eu, off, selected, badge, onSelect }: { ex: Exchange; eu: boolean; off: boolean; selected: boolean; badge?: string; onSelect: () => void }) {
+  const c = eu ? ex.compareEU : ex.compare;
+  const rows: [string, string][] = [['Best for', c.bestFor], [eu ? 'Welcome offer' : 'Welcome bonus', c.welcome], ['Also', c.extra]];
   return (
-    <button type="button" role="radio" aria-checked={selected} className={`${s.card} ${s.cardSelectable} ${selected ? s.cardSelected : ''} ${s.cardEx} ${ex.id === 'pionex' ? s.exPionex : s.exBitunix}`} onClick={onSelect}>
+    <button type="button" role="radio" aria-checked={selected} disabled={off} className={`${s.card} ${s.cardSelectable} ${selected ? s.cardSelected : ''} ${s.cardEx} ${ex.id === 'pionex' ? s.exPionex : s.exBitunix} ${off ? s.cardOff : ''}`} onClick={onSelect}>
       {badge && <span className={s.badge}>{badge}</span>}
       <span className={s.cardBody}>
         <span className={s.cardHead}>
@@ -169,7 +194,9 @@ function ExchangeCard({ ex, selected, badge, onSelect }: { ex: Exchange; selecte
           {rows.map(([k, v]) => <div key={k}><dt>{k}</dt><dd>{v}</dd></div>)}
         </dl>
       </span>
-      <span className={s.radioRow} aria-hidden><span className={s.radioDot} />{selected ? 'Selected' : `Choose ${ex.name}`}</span>
+      {off
+        ? <span className={s.cardOffNote}>Not available in the EU yet</span>
+        : <span className={s.radioRow} aria-hidden><span className={s.radioDot} />{selected ? 'Selected' : `Choose ${ex.name}`}</span>}
     </button>
   );
 }

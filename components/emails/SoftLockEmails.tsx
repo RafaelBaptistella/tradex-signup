@@ -9,6 +9,8 @@
 import Image from 'next/image';
 import { EXCHANGES } from '@/lib/exchanges';
 import e from './emails.module.css';
+import { available, useEU } from '@/lib/compliance';
+import { RULES_NOTE, footer, tag } from './rules';
 
 const EMAILS = [
   { id: 'softlock_d1', when: '1 day after signup, not connected', subject: 'You’re in. One step left', cta: 'Connect your exchange' },
@@ -18,17 +20,19 @@ const EMAILS = [
 const link = (id: string) => `/resume?to=b-connect&email=${id}&utm_source=email&utm_campaign=${id}`;
 
 export default function SoftLockEmails() {
+  const eu = useEU();
   return (
     <main className={e.page}>
       <header className={e.head}>
         <p className={e.kicker}>B-08 · Reminder emails · preview</p>
         <h1>Emails for people who haven’t connected yet</h1>
+        {eu && <p className={e.rulesNote}>{RULES_NOTE}</p>}
       </header>
 
       <div className={`${e.grid} ${e.grid2}`}>
         {EMAILS.map((m) => (
           <section key={m.id} className={e.client} aria-label={m.when}>
-            <p className={e.when}>{m.when}</p>
+            <p className={e.when}>{m.when}{eu && <span className={e.tag}>{tag(m.id)}</span>}</p>
             <div className={e.meta}>
               <p><span>From</span>TradeX</p>
               <p><span>Subject</span>{m.subject}</p>
@@ -49,7 +53,7 @@ export default function SoftLockEmails() {
                   <h2>This month’s prize pool is open</h2>
                   <p>Every trade on an exchange opened through TradeX counts for the leaderboard. Each month, the top traders share these prize pools:</p>
                   <div className={e.pools}>
-                    {EXCHANGES.map((x) => (
+                    {EXCHANGES.filter((x) => available(x.id, eu)).map((x) => (
                       <div key={x.id}><Image src={x.logo.src} alt="" width={x.logo.width * 0.8} height={x.logo.height * 0.8} /><b>{x.pool}</b><span>{x.name} pool</span></div>
                     ))}
                   </div>
@@ -58,7 +62,7 @@ export default function SoftLockEmails() {
               )}
               <a className={e.cta} href={link(m.id)}>{m.cta}</a>
               <hr />
-              <p className={e.footer}>You get this email because you signed up on TradeX. <a href="#">Unsubscribe</a></p>
+              <p className={e.footer}>{eu ? footer(m.id) : <>You get this email because you signed up on TradeX.</>} <a href="#">Unsubscribe</a></p>
             </article>
           </section>
         ))}

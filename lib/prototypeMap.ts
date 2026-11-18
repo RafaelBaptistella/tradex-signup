@@ -106,7 +106,8 @@ export const EXTRAS: { group: string; screens: Screen[] }[] = [
       { id: 'A-19', title: 'Didn’t work · not opened through TradeX', path: '/connect/failed?exchange=bitunix&reason=not_linked' },
       { id: 'A-19', title: 'Didn’t work · UID not found', path: '/connect/failed?exchange=pionex&reason=not_found' },
       { id: 'A-20', title: 'Help drawer', path: '/connect/kyc?exchange=bitunix', note: 'Open “Help” on any connect step' },
-      { id: 'A-06', title: '“Explore first” (to decide)', path: '/explore' }
+      { id: 'A-06', title: '“Explore first” (to decide)', path: '/explore' },
+      { id: 'EU', title: 'Prize pool rules (draft)', path: '/prize-pool-rules', note: 'Linked from the EU risk lines' }
     ]
   },
   {

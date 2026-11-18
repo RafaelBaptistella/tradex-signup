@@ -11,7 +11,8 @@
 import Image from 'next/image';
 import { useEffect, useRef } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { StepHeader, PrimaryButton, HelpButton, Lines, styles as s } from './parts';
+import { StepHeader, PrimaryButton, HelpButton, Lines, Disclosure, styles as s } from './parts';
+import { useEU } from '@/lib/compliance';
 import { SIGNUP_STEPS } from '@/lib/flow';
 import { setFlow, rememberBrand, stepProps, track } from '@/lib/track';
 
@@ -29,6 +30,7 @@ const ACTIVE_TRADERS = '8,432';
 
 export default function Welcome() {
   const router = useRouter();
+  const eu = useEU();
   const params = useSearchParams();
   const viewed = useRef(false);
 
@@ -80,6 +82,7 @@ export default function Welcome() {
             <p className={s.proof}><span className={s.proofDot} aria-hidden />{ACTIVE_TRADERS} active traders on TradeX</p>
             <PrimaryButton onClick={start}>Start for free</PrimaryButton>
             <p className={s.linkRow}><span>Already have an account?</span><a className={s.link} href="/login">Log in</a></p>
+            {eu && <Disclosure />}
           </div>
         </div>
 

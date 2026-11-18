@@ -14,13 +14,16 @@ import { EXCHANGES, type ExchangeId } from '@/lib/exchanges';
 import { CONNECT_ROUTES, EMAILS, resumeLink, type EmailId } from '@/lib/resume';
 import { HELP, type HelpStep } from '@/lib/help';
 import e from './emails.module.css';
+import { available, useEU } from '@/lib/compliance';
+import { RULES_NOTE, footer, tag } from './rules';
 
 const HELP_KEY: HelpStep[] = ['connect_prepare', 'connect_open', 'connect_signup', 'connect_kyc', 'connect_find_uid', 'connect_uid'];
 
 export default function ResumeEmails() {
   const [step, setStep] = useState(2);
   const [exId, setExId] = useState<ExchangeId>('bitunix');
-  const ex = EXCHANGES.find((x) => x.id === exId)!;
+  const eu = useEU();
+  const ex = EXCHANGES.find((x) => x.id === (available(exId, eu) ? exId : 'pionex'))!;
   const here = CONNECT_ROUTES[step];
   const video = HELP[HELP_KEY[step]].video.replaceAll('{ex}', ex.name);
   const stepName = here.name.replace('the exchange', ex.name);
@@ -30,6 +33,7 @@ export default function ResumeEmails() {
       <header className={e.head}>
         <p className={e.kicker}>A-21 · Resume emails · preview</p>
         <h1>Emails for people who stop mid-connect</h1>
+        {eu && <p className={e.rulesNote}>{RULES_NOTE}</p>}
         <div className={e.controls}>
           <label>Stopped at
             <select value={step} onChange={(v) => setStep(+v.target.value)}>
@@ -37,8 +41,8 @@ export default function ResumeEmails() {
             </select>
           </label>
           <label>Exchange
-            <select value={exId} onChange={(v) => setExId(v.target.value as ExchangeId)}>
-              {EXCHANGES.map((x) => <option key={x.id} value={x.id}>{x.name}</option>)}
+            <select value={ex.id} onChange={(v) => setExId(v.target.value as ExchangeId)}>
+              {EXCHANGES.filter((x) => available(x.id, eu)).map((x) => <option key={x.id} value={x.id}>{x.name}</option>)}
             </select>
           </label>
         </div>
@@ -47,7 +51,7 @@ export default function ResumeEmails() {
       <div className={e.grid}>
         {EMAILS.map((m) => (
           <section key={m.id} className={e.client} aria-label={m.delay}>
-            <p className={e.when}>{m.delay}</p>
+            <p className={e.when}>{m.delay}{eu && <span className={e.tag}>{tag(m.id)}</span>}</p>
             <div className={e.meta}>
               <p><span>From</span>TradeX</p>
               <p><span>Subject</span>{subject(m.id, step, ex.name)}</p>
@@ -58,7 +62,7 @@ export default function ResumeEmails() {
               <a className={e.cta} href={resumeLink(m.id, step, ex.id)}>{cta(m.id, step)}</a>
               <p className={e.small}>We saved your progress. The link takes you back to this step.</p>
               <hr />
-              <p className={e.footer}>You get this email because you started connecting {ex.name} on TradeX. <a href="#">Unsubscribe</a></p>
+              <p className={e.footer}>{eu ? footer(m.id) : <>You get this email because you started connecting {ex.name} on TradeX.</>} <a href="#">Unsubscribe</a></p>
             </article>
           </section>
         ))}

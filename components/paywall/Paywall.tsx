@@ -11,7 +11,8 @@
 import Image from 'next/image';
 import { useEffect, useRef, useState, type ReactNode } from 'react';
 import { EXCHANGES, readProfile, recommend, type ExchangeId } from '@/lib/exchanges';
-import { Lines } from '@/components/signup/parts';
+import { Lines, Disclosure } from '@/components/signup/parts';
+import { available, rules, useEU } from '@/lib/compliance';
 import p from './paywall.module.css';
 
 export type PaywallItem = { icon: string; text: string; state?: 'open' | 'locked' | 'todo' };
@@ -47,12 +48,13 @@ export default function Paywall(props: Props) {
   const { id, label, labelLocked, chip, tone = 'accent', art = 'gem', title, lead, sections = [], exchanges, primary, secondary, onClose, children, footer, wide, variant = 'modal' } = props;
   const [selected, setSelected] = useState<ExchangeId>('bitunix');
   const [pick, setPick] = useState<ExchangeId>('bitunix');
+  const eu = useEU();
   const ref = useRef<HTMLDivElement>(null);
   const closeRef = useRef(onClose);
   closeRef.current = onClose;
 
   useEffect(() => {
-    const r = recommend(readProfile()).id;
+    const r = recommend(readProfile(), rules() === 'eu').id;
     setPick(r); setSelected(r);
     if (variant !== 'modal') return;
     ref.current?.focus();
@@ -60,6 +62,13 @@ export default function Paywall(props: Props) {
     document.addEventListener('keydown', onKey);
     return () => document.removeEventListener('keydown', onKey);
   }, [variant]);
+
+  // EU rules: Bitunix can't be picked (MiCA); follow the switch if it flips while the paywall is open.
+  useEffect(() => {
+    const r = recommend(readProfile(), eu).id;
+    setPick(r);
+    setSelected((sel) => (available(sel, eu) ? sel : r));
+  }, [eu]);
 
   const ex = EXCHANGES.find((x) => x.id === selected)!;
   const primaryLabel = typeof primary.label === 'function' ? primary.label(ex.name) : primary.label;
@@ -114,15 +123,15 @@ export default function Paywall(props: Props) {
 
       {exchanges && (
         <div className={p.options} role="radiogroup" aria-label="Exchange">
-          {EXCHANGES.map((x) => (
-            <button key={x.id} type="button" role="radio" aria-checked={selected === x.id}
-              className={`${p.option} ${x.id === 'pionex' ? p.exPionex : p.exBitunix} ${selected === x.id ? p.optionOn : ''}`} onClick={() => setSelected(x.id)}>
+          {EXCHANGES.map((x) => { const off = !available(x.id, eu); return (
+            <button key={x.id} type="button" role="radio" aria-checked={selected === x.id} disabled={off}
+              className={`${p.option} ${x.id === 'pionex' ? p.exPionex : p.exBitunix} ${selected === x.id ? p.optionOn : ''} ${off ? p.optionOff : ''}`} onClick={() => setSelected(x.id)}>
               {x.id === pick && <span className={p.optionBadge}>{OPTION_NOTE[x.id]}</span>}
               <span className={p.optionHead}><Image src={x.logo.src} alt="" width={20} height={20} className={p.optionLogo} />{x.name}</span>
               <b className={p.optionPool}>{x.pool}</b>
-              <span className={p.optionNote}>Monthly prize pool</span>
+              <span className={p.optionNote}>{off ? 'Not available in the EU yet' : 'Monthly prize pool'}</span>
             </button>
-          ))}
+          ); })}
         </div>
       )}
 
@@ -133,6 +142,7 @@ export default function Paywall(props: Props) {
         {secondary && <button type="button" className={p.secondary} onClick={secondary.onClick}>{secondary.label}</button>}
       </div>
       {footer && <div className={p.footer}>{footer}</div>}
+      {eu && exchanges && <div className={p.footer}><Disclosure /></div>}
     </div>
   );
 

@@ -5,6 +5,7 @@
  * Canvas requirements: whole platform locked; only path is connecting an exchange.
  * Paywall-style modal over the locked platform (no close button): what they used during the trial, what opens,
  * the two exchanges, Connect CTA, Contact support / Log out links.
+ * EU rules: the wall keeps GDPR rights in reach (download data, delete account), not only Connect / Support / Log out.
  * Event: lockwall_viewed; exchange_connect_started {source: lockwall, exchange}.
  */
 import { useEffect, useRef, useState } from 'react';
@@ -14,6 +15,7 @@ import p from '@/components/paywall/paywall.module.css';
 import { DISCORD_SUPPORT } from '@/lib/help';
 import { connectPath } from '@/lib/exchanges';
 import { setFlow, track } from '@/lib/track';
+import { useEU } from '@/lib/compliance';
 
 /** Same three things as the C-04 “Your trial so far” panel. */
 const TRIED = [
@@ -30,6 +32,7 @@ const UNLOCKS = [
 
 export default function LockWall() {
   const router = useRouter();
+  const eu = useEU();
   const [used, setUsed] = useState<Record<string, boolean>>({});
   const viewed = useRef(false);
 
@@ -62,6 +65,14 @@ export default function LockWall() {
             <span aria-hidden>·</span>
             <a href="/c" onClick={() => track('lockwall_logout_clicked')}>Log out</a>
           </span>
+          {/* Placeholder links: the account settings pages for these rights aren't built yet. */}
+          {eu && (
+            <span className={p.links}>
+              <a href="#" onClick={(e) => { e.preventDefault(); track('lockwall_data_download_clicked'); }}>Download my data</a>
+              <span aria-hidden>·</span>
+              <a href="#" onClick={(e) => { e.preventDefault(); track('lockwall_delete_account_clicked'); }}>Delete account</a>
+            </span>
+          )}
         </>
       }
     />

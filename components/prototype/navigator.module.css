@@ -57,3 +57,5 @@
 .chip { height: 24px; padding: 0 8px; border: 1px solid rgba(255, 255, 255, 0.14); border-radius: 100px; background: none; color: #a1a1aa; font: inherit; font-size: 11.5px; cursor: pointer; }
 .chip:hover { background: rgba(255, 255, 255, 0.06); color: #fff; }
 .chipOn, .chipOn:hover { border-color: rgba(116, 211, 251, 0.6); background: rgba(116, 211, 251, 0.14); color: #fff; }
+
+.switchLabel { margin: 0 16px 8px; font-size: 12px; font-weight: 500; letter-spacing: 0.06em; text-transform: uppercase; color: #71717a; }

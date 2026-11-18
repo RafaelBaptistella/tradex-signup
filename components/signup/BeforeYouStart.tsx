@@ -9,6 +9,7 @@
  */
 import Image from 'next/image';
 import { useEffect, useRef } from 'react';
+import { useEU } from '@/lib/compliance';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { StepHeader, PrimaryButton, Callout, styles as s } from './parts';
 import HelpDrawer from './HelpDrawer';
@@ -19,6 +20,7 @@ const CONNECT_STEPS = 5;
 
 export default function BeforeYouStart() {
   const router = useRouter();
+  const eu = useEU();
   const params = useSearchParams();
   const ex = exchangeById(params.get('exchange')) ?? exchangeById('bitunix')!;
   const fresh = params.get('fresh') === '1';
@@ -31,7 +33,7 @@ export default function BeforeYouStart() {
   }, [ex.id, fresh]);
 
   const needs = [
-    { icon: 'identification', title: 'Your ID card or passport', text: `${ex.name} checks who you are, as every regulated exchange must.` },
+    { icon: 'identification', title: 'Your ID card or passport', text: eu ? `${ex.name} checks who you are, as the law requires.` : `${ex.name} checks who you are, as every regulated exchange must.` },
     { icon: 'mobile-check', title: 'Your phone', text: 'To take photos of your ID and to receive codes.' },
     { icon: 'email', title: `An email you haven’t used on ${ex.name}`, text: fresh ? `Your current ${ex.name} account already uses your usual email, so pick another one.` : 'Any address you can open now: the exchange sends a code to it.' }
   ];

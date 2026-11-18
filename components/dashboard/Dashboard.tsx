@@ -16,6 +16,7 @@ import { useCallback, useEffect, useLayoutEffect, useRef, useState, type ReactNo
 import { useRouter, useSearchParams } from 'next/navigation';
 import { connectPath, exchangeById, type ExchangeId } from '@/lib/exchanges';
 import { track } from '@/lib/track';
+import { useEU } from '@/lib/compliance';
 import LockedFeatureSheet, { type LockedFeature } from './LockedFeatureSheet';
 import TrialDayModal, { DAYS, DAY_MODAL_KEY } from './TrialDayModal';
 import d from './dashboard.module.css';
@@ -97,6 +98,7 @@ export default function Dashboard({ mode = 'a', overlay, entry, ended }: {
     setSheet(feature as LockedFeature);
   };
   const params = useSearchParams();
+  const eu = useEU();
   /** C-04: trial day 1–7, counted from when the email was confirmed (C-02). ?day= overrides it for demos. */
   const [trialDay, setTrialDay] = useState(1);
   const daysLeft = Math.max(1, 8 - trialDay);
@@ -152,7 +154,7 @@ export default function Dashboard({ mode = 'a', overlay, entry, ended }: {
     try { sessionStorage.setItem(DAY_MODAL_KEY + dayModal, '1'); } catch { /* shows again on reload */ }
     setDayModal(null);
   };
-  const ex = exchangeById(params.get('exchange')) ?? exchangeById('bitunix')!;
+  const ex = exchangeById(params.get('exchange')) ?? exchangeById(eu ? 'pionex' : 'bitunix')!;
   const [name, setName] = useState('');
   const [tourStep, setTourStep] = useState<number | null>(firstTour ? 0 : null);
   const [rect, setRect] = useState<DOMRect | null>(null);
@@ -315,7 +317,7 @@ export default function Dashboard({ mode = 'a', overlay, entry, ended }: {
         {!connected && !trial && (
           <div className={d.banner} role="region" aria-label="Connect your exchange">
             <span className={d.bannerIcon} aria-hidden><Image src="/dashboard/icons/lock.svg" alt="" width={16} height={16} /></span>
-            <p><b>Connect to join the leaderboard</b><span>Open Bitunix or Pionex through TradeX to unlock the leaderboard and your ranks.</span></p>
+            <p><b>Connect to join the leaderboard</b><span>{eu ? 'Open Pionex through TradeX to unlock the leaderboard and your ranks.' : 'Open Bitunix or Pionex through TradeX to unlock the leaderboard and your ranks.'}</span></p>
             <button type="button" onClick={() => connectFrom('banner')}>Connect exchange</button>
           </div>
         )}

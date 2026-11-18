@@ -6,6 +6,7 @@
  * When PostHog is on the page (window.posthog), events go there; otherwise they are logged in development.
  */
 import { BRANDS, STEPS, type StepKey } from './flow';
+import { consent, rules } from './compliance';
 
 type Props = Record<string, string | number | boolean | undefined>;
 
@@ -59,6 +60,11 @@ export function stepProps(key: StepKey): Props {
 export function track(event: string, props: Props = {}) {
   if (typeof window === 'undefined') return;
   const payload = { variant: variant(), brand: brand(), ...props };
+  // EU rules: no analytics until people accept the consent banner (TDDDG §25).
+  if (rules() === 'eu' && consent() !== 'granted') {
+    if (process.env.NODE_ENV !== 'production') console.info('[track] held, no consent:', event);
+    return;
+  }
   if (window.posthog) window.posthog.capture(event, payload);
   else if (process.env.NODE_ENV !== 'production') console.info('[track]', event, payload);
 }

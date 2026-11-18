@@ -3,12 +3,13 @@
 /**
  * Prototype navigator for stakeholders: an admin-style panel on every screen.
  * Lists the A/B/C flows and Control, screens outside the happy path (variants, states, emails),
- * a desktop / phone view switch and the demo values. Hidden inside the phone frame and with ?clean=1 (for prints).
+ * a desktop / phone view switch, the EU rules switch (compliant screens or the ones from before the review) and the demo values. Hidden inside the phone frame and with ?clean=1 (for prints).
  * Toggle with the "Prototype" pill or the P key.
  */
 import { useEffect, useState } from 'react';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { FLOWS, EXTRAS, DEMO_VALUES, type Screen } from '@/lib/prototypeMap';
+import { setConsent, setRules, useEU } from '@/lib/compliance';
 import n from './navigator.module.css';
 
 export default function Navigator() {
@@ -18,6 +19,7 @@ export default function Navigator() {
   const [open, setOpen] = useState(false);
   const [hidden, setHidden] = useState(true);
   const [tab, setTab] = useState<'flows' | 'more' | 'demo'>('flows');
+  const eu = useEU();
 
   const current = pathname + (params.toString() ? `?${params}` : '');
   const inDevice = pathname === '/device';
@@ -98,6 +100,12 @@ export default function Navigator() {
             <button type="button" aria-pressed={inDevice} onClick={() => setView('phone')}>Mobile</button>
           </div>
 
+          <p className={n.switchLabel}>EU rules</p>
+          <div className={n.view} role="group" aria-label="EU rules">
+            <button type="button" aria-pressed={eu} onClick={() => setRules('eu')}>Compliant</button>
+            <button type="button" aria-pressed={!eu} onClick={() => setRules('current')}>Before review</button>
+          </div>
+
           <div className={n.tabs} role="tablist">
             {([['flows', 'Flows'], ['more', 'Out of flow'], ['demo', 'Demo values']] as const).map(([k, l]) => (
               <button key={k} type="button" role="tab" aria-selected={tab === k} onClick={() => setTab(k)}>{l}</button>
@@ -137,6 +145,7 @@ export default function Navigator() {
 
           <div className={n.foot}>
             <span>Press P to show or hide</span>
+            {eu && <button type="button" onClick={() => setConsent(null)}>Show cookie banner</button>}
           </div>
         </aside>
       )}

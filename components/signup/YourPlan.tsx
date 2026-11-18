@@ -8,7 +8,8 @@
  */
 import { useEffect, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { StepHeader, PrimaryButton, HelpButton, Lines, styles as s } from './parts';
+import { StepHeader, PrimaryButton, HelpButton, Lines, Disclosure, styles as s } from './parts';
+import { useEU } from '@/lib/compliance';
 import { SIGNUP_STEPS } from '@/lib/flow';
 import { readProfile, type Profile } from '@/lib/exchanges';
 import { stepProps, track } from '@/lib/track';
@@ -39,6 +40,17 @@ const HEADLINE: Record<string, string> = {
   pro: 'Your plan to earn more from your trading'
 };
 
+/** EU rules: no promise to "earn more" from trading. */
+const HEADLINE_EU: Record<string, string> = { ...HEADLINE, pro: 'Your plan to grow as a trader' };
+
+/** EU rules: no signal group (may count as investment advice) and no funded challenges until legal confirms them. */
+const UNLOCKS_EU = [
+  { at: 1, text: 'Courses, community and the leaderboard' },
+  { at: 4, text: 'Trading indicators and tools' },
+  { at: 7, text: 'Live trading sessions with the coaches' },
+  { at: 10, text: 'Strategy call with Tim' }
+];
+
 /** Rank path preview. Which rank unlocks what is not confirmed yet, so unlocks are shown as examples along the path. */
 const UNLOCKS = [
   { at: 1, text: 'Courses, community and the leaderboard' },
@@ -50,6 +62,7 @@ const UNLOCKS = [
 
 export default function YourPlan() {
   const router = useRouter();
+  const eu = useEU();
   const [profile, setProfile] = useState<Profile>({});
   const viewed = useRef(false);
 
@@ -74,7 +87,7 @@ export default function YourPlan() {
 
         <div className={`${s.centerContent} ${s.medium}`}>
           <div className={s.intro}>
-            <h1 className={s.title}>{HEADLINE[profile.level || ''] || 'Your plan on TradeX'}</h1>
+            <h1 className={s.title}>{(eu ? HEADLINE_EU : HEADLINE)[profile.level || ''] || 'Your plan on TradeX'}</h1>
             <p className={s.lead}>Based on your answers, this is where we’d start.</p>
           </div>
 
@@ -97,7 +110,7 @@ export default function YourPlan() {
             <h2 id="plan-path" className={s.questionLabel}>Your path: rank 1 to 10</h2>
             <div className={s.planCard}>
               <ol className={s.path}>
-                {UNLOCKS.map((u, i) => (
+                {(eu ? UNLOCKS_EU : UNLOCKS).map((u, i) => (
                   <li key={u.at} className={i === 0 ? s.pathOn : ''} aria-current={i === 0 ? 'step' : undefined}>
                     <span className={s.pathMark} aria-hidden />
                     <span className={s.unlockAt}>Rank {u.at}</span>
@@ -105,12 +118,13 @@ export default function YourPlan() {
                   </li>
                 ))}
               </ol>
-              <p className={s.hint}><Lines text="You start at rank 1. Your trading volume moves you up." /></p>
+              <p className={s.hint}><Lines text={eu ? 'You start at rank 1. Your trading volume moves you up. These unlocks are examples and can change.' : 'You start at rank 1. Your trading volume moves you up.'} /></p>
             </div>
           </section>
 
           <div className={s.choiceActions}>
             <PrimaryButton onClick={() => router.push('/why-connect')}>Continue</PrimaryButton>
+            {eu && <Disclosure />}
           </div>
         </div>
 
