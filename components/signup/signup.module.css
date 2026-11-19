@@ -677,3 +677,63 @@
 .rulesList { margin: 0; padding-left: 20px; display: flex; flex-direction: column; gap: 8px; font-size: 16px; line-height: 1.5; color: var(--tx-fg-soft); }
 .rulesPage { min-height: 100vh; box-sizing: border-box; padding: 64px 24px 96px; }
 .rulesContent { max-width: 640px; margin: 0 auto; display: flex; flex-direction: column; gap: 32px; }
+/* A-07 EU mode: bonus amounts live in a hover card under each exchange (keyboard focus too). Touch screens show it inside the selected card. */
+.bonusHint { text-decoration: underline dotted rgba(255, 255, 255, 0.35); text-underline-offset: 4px; }
+.bonusTip {
+  position: absolute; left: 8px; right: 8px; bottom: calc(100% + 8px); z-index: 20; display: flex; flex-direction: column; gap: 4px;
+  padding: 16px; border-radius: var(--tx-radius); border: 1px solid rgba(var(--ex-rgb), 0.35); background: rgba(10, 13, 18, 0.97);
+  box-shadow: 0 16px 48px rgba(0, 0, 0, 0.5); font-size: 15px; line-height: 1.5; color: var(--tx-fg-soft); text-align: left;
+  opacity: 0; visibility: hidden; transform: translateY(4px); transition: opacity 0.15s, transform 0.15s, visibility 0.15s; pointer-events: none;
+}
+.bonusTipTitle { margin-bottom: 4px; font-size: 16px; font-weight: 500; color: var(--tx-fg); }
+.bonusTipNote { margin-top: 4px; font-size: 13px; color: var(--tx-fg-muted); }
+@media (hover: hover) {
+  .cardEx:hover .bonusTip, .cardEx:focus-visible .bonusTip { opacity: 1; visibility: visible; transform: none; }
+}
+@media (hover: none) {
+  .bonusTip { display: none; position: static; opacity: 1; visibility: visible; transform: none; box-shadow: none; margin: 0 8px 8px; }
+  .cardSelected .bonusTip { display: flex; }
+}
+
+/* A-11, A-12 (Nov 19, 2026): multi-step screens in columns, so the whole step fits on one desktop screen.
+   Header: intro left, extras right. Steps side by side, one card each with print and tick. Footer: note left, button right.
+   Below 1024px everything stacks again. */
+/* Wider than the page padding allows: centred on the screen, up to 1120px (the step header keeps its width). */
+.stepsPage { width: min(1120px, calc(100vw - 96px)); max-width: none; margin-inline: 0; align-self: center; gap: 20px; padding-block: 8px 24px; justify-content: flex-start; }
+.stepsHeader { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 420px); align-items: end; gap: 24px; }
+.stepsHeader .segmented { justify-self: end; }
+.stepsHeaderWide { grid-template-columns: minmax(0, 1fr) minmax(0, 600px); }
+.stepsAside { display: flex; flex-direction: column; gap: 8px; }
+.stepsAside .safety { padding: 12px 16px; }
+.stepCols { display: grid; grid-template-columns: repeat(var(--cols, 3), minmax(0, 1fr)); gap: 12px; }
+/* Each card is a 2-row subgrid: titles share one row, so every print starts at the same height; the tick sits 12px under its print. */
+.stepCols .subStep { display: grid; grid-row: span 2; grid-template-rows: subgrid; row-gap: 12px; align-content: start; }
+.stepBody { display: flex; flex-direction: column; gap: 12px; }
+.stepCols .welcomeCardTitle { font-size: 17px; }
+.stepCols .welcomeCardText { font-size: 15px; }
+.stepShot { display: flex; justify-content: center; }
+.stepShot .previewImg { width: fit-content; max-width: 100%; }
+/* Desktop prints are all 4:3, so they fill the card width at the same height. Phone prints keep a height cap. */
+.stepShot .previewImg img { width: auto; max-width: 100%; max-height: 260px; }
+.stepCols .checkRow { font-size: 15px; }
+.stepsFooter { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 320px); align-items: center; gap: 24px; }
+.stepsFooterTop { align-items: start; }
+.stepsFooter .planBlock { gap: 8px; }
+.stepsFooter .choiceActions { max-width: none; }
+/* A-12 common problems: one card, title inside, accordions in two columns on desktop. */
+.faqCard { align-self: start; }
+.faqCardTitle { margin: 0; padding: 14px 16px 6px; font-size: 18px; font-weight: 500; line-height: 1.4; }
+.faqCardItems { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); align-items: start; }
+.faqCardItems .faqItem { border-top: 1px solid rgba(255, 255, 255, 0.08); }
+.faqCardItems .faqItem + .faqItem { border-top: 1px solid rgba(255, 255, 255, 0.08); }
+.faqCardItems .faqItem:nth-child(even) { border-left: 1px solid rgba(255, 255, 255, 0.08); }
+@media (max-width: 1023px) {
+  .stepsPage { width: 100%; }
+  .stepsHeader, .stepsFooter, .stepsHeaderWide { grid-template-columns: 1fr; align-items: stretch; }
+  .faqCardItems { grid-template-columns: 1fr; }
+  .faqCardItems .faqItem:nth-child(even) { border-left: 0; }
+  .stepsHeader .segmented { justify-self: start; }
+  .stepCols { grid-template-columns: 1fr; }
+  .stepShot .previewImg { width: 100%; }
+  .stepShot .previewImg img { width: 100%; max-height: none; }
+}

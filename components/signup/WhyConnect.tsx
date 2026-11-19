@@ -11,7 +11,7 @@ import Image from 'next/image';
 import { useEffect, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { StepHeader, PrimaryButton, HelpButton, Callout, Disclosure, styles as s } from './parts';
-import { useEU } from '@/lib/compliance';
+import { openNames, useEU } from '@/lib/compliance';
 import { SIGNUP_STEPS } from '@/lib/flow';
 import { stepProps, track } from '@/lib/track';
 
@@ -32,9 +32,9 @@ const FAQ = [
   { q: 'How long does it take?', a: 'About 10 minutes, including the exchange’s ID check. We guide you through every step and save your progress.' }
 ];
 
-/** EU rules: only Pionex (MiCA), the exact data the exchange shares (confirm against the affiliate feed), honest custody risk, how TradeX earns. */
+/** EU rules: the exchanges open in the EU (lib/compliance.ts), the exact data the exchange shares (confirm against the affiliate feed), honest custody risk, how TradeX earns. */
 const STEPS_EU = [
-  { ...STEPS[0], text: 'On Pionex, with an account opened through TradeX.' },
+  { ...STEPS[0], text: `On ${openNames(true)}, with an account opened through TradeX.` },
   { ...STEPS[1], text: 'The exchange shares your UID, trading volume and fees with TradeX.' },
   STEPS[2]
 ];
@@ -43,7 +43,7 @@ const FAQ_EU = [
   { q: 'Where is my money?', a: 'On the exchange, in your own account. TradeX never holds your funds and never asks for API keys or passwords. Like any company, an exchange can be hacked or fail, so only deposit what you can afford to lose.' },
   { q: 'What does TradeX see?', a: 'Your UID, and the trading volume and fees of the account you open through TradeX. Never your ID documents. TradeX can’t trade, deposit or withdraw for you.' },
   { q: 'How does TradeX make money?', a: 'The exchange pays TradeX a share of the fees on your trades. You pay the exchange’s usual fees, nothing extra.' },
-  { q: 'I already have a Pionex account.', a: 'Only accounts opened through TradeX count for the leaderboard and ranks. Your current account stays exactly as it is.' },
+  { q: `I already have a ${openNames(true)} account.`, a: 'Only accounts opened through TradeX count for the leaderboard and ranks. Your current account stays exactly as it is.' },
   FAQ[4]
 ];
 

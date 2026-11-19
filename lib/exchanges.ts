@@ -1,3 +1,5 @@
+import { EU_AVAILABLE } from './compliance';
+
 export type ExchangeId = 'bitunix' | 'pionex';
 
 export type Exchange = {
@@ -44,7 +46,7 @@ export const EXCHANGES: Exchange[] = [
 
 export const exchangeById = (id: string | null) => EXCHANGES.find((e) => e.id === id);
 
-/** Profile saved by A-04 (About you). Empty if A-04 was skipped; Bitunix is then the pick. */
+/** Profile saved by A-04 (About you). Empty if A-04 was skipped; Bitunix is then the pick. current_exchange: no longer asked (Nov 19, 2026), kept for old sessions. */
 export type Profile = { level?: string; goal?: string; current_exchange?: string };
 
 export function readProfile(): Profile {
@@ -53,8 +55,8 @@ export function readProfile(): Profile {
 
 /** Our pick and the one-line reason shown on its badge. */
 export function recommend(p: Profile, eu = false): { id: ExchangeId; reason: string } {
-  // EU rules: Bitunix isn't authorised under MiCA, so Pionex is the only pick (see lib/compliance.ts).
-  if (eu) return { id: 'pionex', reason: 'Available in the EU' };
+  // EU rules: while Bitunix is off in the EU (MiCA, see lib/compliance.ts), Pionex is the only pick.
+  if (eu && !EU_AVAILABLE.bitunix) return { id: 'pionex', reason: 'Available in the EU' };
   if (p.current_exchange === 'bitunix') return { id: 'pionex', reason: 'You don’t use it yet' };
   if (p.current_exchange === 'pionex') return { id: 'bitunix', reason: 'You don’t use it yet' };
   if (p.level === 'pro') return { id: 'bitunix', reason: 'Lowest fees for active traders' };
@@ -78,12 +80,12 @@ export type Print = { desktop: string; mobile?: string; alt: string; mark: Print
 export const REGISTER_PRINT: Record<ExchangeId, { print: Print; field: string }> = {
   bitunix: {
     field: 'Invitation code (optional)',
-    print: { desktop: '/signup/bitunix/register-desktop.jpg', mobile: '/signup/bitunix/register-mobile.jpg', alt: 'Bitunix sign-up form with the invitation code field', mark: [13, 37, 74, 13.5], mobileMark: [1.5, 49.5, 96.5, 16.5] }
+    print: { desktop: '/signup/bitunix/register-desktop.jpg', mobile: '/signup/bitunix/register-mobile.jpg', alt: 'Bitunix sign-up form with the invitation code field', mark: [21.5, 40.5, 56.9, 13], mobileMark: [1.5, 49.5, 96.5, 16.5] }
   },
   pionex: {
     field: 'Referral code (optional)',
     // Phone print shows a test email and password; both are blurred.
-    print: { desktop: '/signup/pionex/register-desktop.jpg', mobile: '/signup/pionex/register-mobile.jpg', alt: 'Pionex sign-up form with the referral code field', mark: [4.5, 55.5, 89, 11.5], mobileMark: [3.5, 55.5, 92, 11.5], mobileMasks: [[6.5, 33.5, 40, 5], [6.5, 46.5, 13, 5]] }
+    print: { desktop: '/signup/pionex/register-desktop.jpg', mobile: '/signup/pionex/register-mobile.jpg', alt: 'Pionex sign-up form with the referral code field', mark: [24.8, 52.9, 49.4, 8.6], mobileMark: [3.5, 55.5, 92, 11.5], mobileMasks: [[6.5, 33.5, 40, 5], [6.5, 46.5, 13, 5]] }
   }
 };
 

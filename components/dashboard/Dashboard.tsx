@@ -16,7 +16,7 @@ import { useCallback, useEffect, useLayoutEffect, useRef, useState, type ReactNo
 import { useRouter, useSearchParams } from 'next/navigation';
 import { connectPath, exchangeById, type ExchangeId } from '@/lib/exchanges';
 import { track } from '@/lib/track';
-import { useEU } from '@/lib/compliance';
+import { available, openNames, useEU } from '@/lib/compliance';
 import LockedFeatureSheet, { type LockedFeature } from './LockedFeatureSheet';
 import TrialDayModal, { DAYS, DAY_MODAL_KEY } from './TrialDayModal';
 import d from './dashboard.module.css';
@@ -154,7 +154,7 @@ export default function Dashboard({ mode = 'a', overlay, entry, ended }: {
     try { sessionStorage.setItem(DAY_MODAL_KEY + dayModal, '1'); } catch { /* shows again on reload */ }
     setDayModal(null);
   };
-  const ex = exchangeById(params.get('exchange')) ?? exchangeById(eu ? 'pionex' : 'bitunix')!;
+  const ex = exchangeById(params.get('exchange')) ?? exchangeById(available('bitunix', eu) ? 'bitunix' : 'pionex')!;
   const [name, setName] = useState('');
   const [tourStep, setTourStep] = useState<number | null>(firstTour ? 0 : null);
   const [rect, setRect] = useState<DOMRect | null>(null);
@@ -317,7 +317,7 @@ export default function Dashboard({ mode = 'a', overlay, entry, ended }: {
         {!connected && !trial && (
           <div className={d.banner} role="region" aria-label="Connect your exchange">
             <span className={d.bannerIcon} aria-hidden><Image src="/dashboard/icons/lock.svg" alt="" width={16} height={16} /></span>
-            <p><b>Connect to join the leaderboard</b><span>{eu ? 'Open Pionex through TradeX to unlock the leaderboard and your ranks.' : 'Open Bitunix or Pionex through TradeX to unlock the leaderboard and your ranks.'}</span></p>
+            <p><b>Connect to join the leaderboard</b><span>{`Open ${openNames(eu)} through TradeX to unlock the leaderboard and your ranks.`}</span></p>
             <button type="button" onClick={() => connectFrom('banner')}>Connect exchange</button>
           </div>
         )}

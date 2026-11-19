@@ -6,6 +6,7 @@
  * rank 1 → 10 path preview. (The cashback estimate was removed: rewards come from the monthly leaderboard, not a share of fees.)
  * Event: guided_plan_viewed.
  */
+import Image from 'next/image';
 import { useEffect, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { StepHeader, PrimaryButton, HelpButton, Lines, Disclosure, styles as s } from './parts';
@@ -16,11 +17,12 @@ import { stepProps, track } from '@/lib/track';
 
 const P = stepProps('your_plan');
 
-type Item = { key: string; title: string; text: string };
+/** icon: from the Figma icon library (12:339), same set as A-01. */
+type Item = { key: string; icon: string; title: string; text: string };
 const ITEMS: Record<string, Item> = {
-  courses: { key: 'courses', title: '70h+ of courses', text: 'Start with the basics and move to advanced strategies at your own pace.' },
-  cashback: { key: 'cashback', title: 'Monthly rewards for top traders', text: 'Your trading volume puts you on the leaderboard, and the top traders share a prize pool.' },
-  community: { key: 'community', title: 'Discord + daily live trading', text: 'Trade alongside the community and the coaches every day.' }
+  courses: { key: 'courses', icon: 'education', title: '70h+ of courses', text: 'Start with the basics and move to advanced strategies at your own pace.' },
+  cashback: { key: 'cashback', icon: 'trophy', title: 'Monthly rewards for top traders', text: 'Your trading volume puts you on the leaderboard, and the top traders share a prize pool.' },
+  community: { key: 'community', icon: 'forum', title: 'Discord + daily live trading', text: 'Trade alongside the community and the coaches every day.' }
 };
 
 /** Order by goal ('cashback' = the leaderboard-rewards goal); beginners always get courses first. */
@@ -94,9 +96,9 @@ export default function YourPlan() {
           <section className={s.planBlock} aria-labelledby="plan-first">
             <h2 id="plan-first" className={s.questionLabel}>First for you</h2>
             <ol className={s.planList}>
-              {plan.map((it, i) => (
+              {plan.map((it) => (
                 <li key={it.key} className={s.welcomeCard}>
-                  <b className={s.planNum}>{i + 1}</b>
+                  <span className={s.iconTile}><Image src={`/signup/icons/${it.icon}.svg`} alt="" width={20} height={20} /></span>
                   <div>
                     <h3 className={s.welcomeCardTitle}>{it.title}</h3>
                     <p className={s.welcomeCardText}>{it.text}</p>
@@ -133,7 +135,7 @@ export default function YourPlan() {
 
       <HelpButton stepKey="your_plan">
         <h2>What is this plan?</h2>
-        <p>A starting point based on your three answers. Everything on TradeX stays open to you; this only decides what we show you first.</p>
+        <p>A starting point based on your answers. Everything on TradeX stays open to you; this only decides what we show you first.</p>
       </HelpButton>
     </main>
   );

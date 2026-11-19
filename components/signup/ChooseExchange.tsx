@@ -114,7 +114,7 @@ export default function ChooseExchange() {
 
           <div className={s.choiceActions}>
             <PrimaryButton onClick={() => confirm(selected)}>Continue with {current.name}</PrimaryButton>
-            {!eu && <button type="button" className={s.inlineLink} onClick={() => confirm(pick.id)}>Not sure? Take our pick ({EXCHANGES.find((e) => e.id === pick.id)!.name})</button>}
+            {(!eu || otherOpen) && <button type="button" className={s.inlineLink} onClick={() => confirm(pick.id)}>Not sure? Take our pick ({EXCHANGES.find((e) => e.id === pick.id)!.name})</button>}
           </div>
 
           <p className={s.reassure}><Lines text="Your money stays on the exchange. TradeX never holds your funds or your keys." /></p>
@@ -169,7 +169,7 @@ export default function ChooseExchange() {
 
       <HelpButton stepKey="exchange_choice">
         <h2>Which exchange should I pick?</h2>
-        <p>{eu ? 'In the EU, you can open Pionex through TradeX. Bitunix isn’t available in the EU yet. We guide you through opening the account step by step.' : 'Most TradeX members use Bitunix. Pick Pionex if you want its free trading bots. Either way, we guide you through opening the account step by step.'}</p>
+        <p>{eu && !available('bitunix', eu) ? 'In the EU, you can open Pionex through TradeX. Bitunix isn’t available in the EU yet. We guide you through opening the account step by step.' : 'Most TradeX members use Bitunix. Pick Pionex if you want its free trading bots. Either way, we guide you through opening the account step by step.'}</p>
       </HelpButton>
     </main>
   );
@@ -178,8 +178,10 @@ export default function ChooseExchange() {
 function ExchangeCard({ ex, eu, off, selected, badge, onSelect }: { ex: Exchange; eu: boolean; off: boolean; selected: boolean; badge?: string; onSelect: () => void }) {
   const c = eu ? ex.compareEU : ex.compare;
   const rows: [string, string][] = [['Best for', c.bestFor], [eu ? 'Welcome offer' : 'Welcome bonus', c.welcome], ['Also', c.extra]];
+  // EU rules: the card stays quiet; the bonus amounts show only on hover or keyboard focus (on touch screens, inside the selected card).
+  const tipId = `bonus-${ex.id}`;
   return (
-    <button type="button" role="radio" aria-checked={selected} disabled={off} className={`${s.card} ${s.cardSelectable} ${selected ? s.cardSelected : ''} ${s.cardEx} ${ex.id === 'pionex' ? s.exPionex : s.exBitunix} ${off ? s.cardOff : ''}`} onClick={onSelect}>
+    <button type="button" role="radio" aria-checked={selected} disabled={off} aria-describedby={eu && !off ? tipId : undefined} className={`${s.card} ${s.cardSelectable} ${selected ? s.cardSelected : ''} ${s.cardEx} ${ex.id === 'pionex' ? s.exPionex : s.exBitunix} ${off ? s.cardOff : ''}`} onClick={onSelect}>
       {badge && <span className={s.badge}>{badge}</span>}
       <span className={s.cardBody}>
         <span className={s.cardHead}>
@@ -191,9 +193,17 @@ function ExchangeCard({ ex, eu, off, selected, badge, onSelect }: { ex: Exchange
         </span>
         <Image className={s.cardDivider} src="/signup/divider.svg" alt="" width={243} height={1} />
         <dl className={s.compare}>
-          {rows.map(([k, v]) => <div key={k}><dt>{k}</dt><dd>{v}</dd></div>)}
+          {rows.map(([k, v], i) => <div key={k}><dt>{k}</dt><dd className={eu && !off && i === 1 ? s.bonusHint : undefined}>{v}</dd></div>)}
         </dl>
       </span>
+      {eu && !off && (
+        <span id={tipId} role="tooltip" className={s.bonusTip}>
+          <span className={s.bonusTipTitle}>{ex.name} welcome bonus</span>
+          <span className={s.line}>{ex.compare.welcome}.</span>
+          {ex.compare.extra !== ex.compareEU.extra && <span className={s.line}>{ex.compare.extra}.</span>}
+          <span className={s.bonusTipNote}>Set by {ex.name}, on {ex.name}’s terms.</span>
+        </span>
+      )}
       {off
         ? <span className={s.cardOffNote}>Not available in the EU yet</span>
         : <span className={s.radioRow} aria-hidden><span className={s.radioDot} />{selected ? 'Selected' : `Choose ${ex.name}`}</span>}

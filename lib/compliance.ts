@@ -40,11 +40,15 @@ export function useEU(): boolean {
 
 /**
  * MiCA: since 1 Jul 2026 only authorised providers may serve EU residents.
- * Bitunix isn't on ESMA's register (Nov 2026), so EU users can't pick it. Pionex serves the EU through its Irish entity.
+ * Bitunix isn't on ESMA's register (Nov 2026). Pionex serves the EU through its Irish entity.
+ * Business decision (Nov 19, 2026): keep Bitunix open in EU mode for now, even without the licence. Legal risk accepted by TradeX.
+ * Set bitunix to false to show it as "Not available in the EU yet" again; every screen follows this flag.
  * TO CONFIRM with legal before launch: both exchanges in the ESMA CASP register, and Pionex's EU affiliate link.
  */
-export const EU_AVAILABLE: Record<ExchangeId, boolean> = { bitunix: false, pionex: true };
+export const EU_AVAILABLE: Record<ExchangeId, boolean> = { bitunix: true, pionex: true };
 export const available = (id: ExchangeId, eu: boolean) => !eu || EU_AVAILABLE[id];
+/** Exchanges people can open, in words: "Bitunix or Pionex", or only "Pionex" while Bitunix is off in the EU. */
+export const openNames = (eu: boolean) => (available('bitunix', eu) ? 'Bitunix or Pionex' : 'Pionex');
 
 /** Short disclosures shown wherever we ask people to trade or connect (EU mode). One sentence per line. */
 export const RISK = 'Crypto trading is high risk. You can lose all the money you invest.';

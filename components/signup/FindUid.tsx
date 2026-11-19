@@ -21,14 +21,14 @@ const GUIDE: Record<ExchangeId, { steps: { title: string; text: string }[]; prin
       { title: 'Open your profile menu', text: 'Click your profile picture at the top right of Bitunix.' },
       { title: 'Copy your UID', text: 'It’s right under your email. Tap the copy icon next to it. The eye icon shows the number.' }
     ],
-    print: { desktop: '/signup/bitunix/uid.jpg', alt: 'Bitunix profile menu with the UID under the email, next to the copy and eye icons', mark: [25, 68, 41, 15], masks: [[26, 57.5, 55, 12]] }
+    print: { desktop: '/signup/bitunix/uid.jpg', alt: 'Bitunix profile menu with the UID under the email, next to the copy and eye icons', mark: [34.4, 42.5, 25.6, 9.4], masks: [[35, 35.9, 34.4, 7.5]] }
   },
   pionex: {
     steps: [
       { title: 'Open your profile menu', text: 'Click your profile picture at the top right of Pionex.' },
       { title: 'Copy your UID', text: 'It’s right under your email, after “UID:”. Tap the copy icon next to it.' }
     ],
-    print: { desktop: '/signup/pionex/uid.jpg', alt: 'Pionex profile menu with the UID under the email, next to the copy icon', mark: [16.5, 68, 31, 16], masks: [[17.5, 54.5, 36, 13], [24.6, 71.5, 17.4, 10]] }
+    print: { desktop: '/signup/pionex/uid.jpg', alt: 'Pionex profile menu with the UID under the email, next to the copy icon', mark: [29.1, 42.5, 19.4, 10], masks: [[29.7, 34.1, 22.5, 8.1], [34.1, 44.7, 10.9, 6.3]] }
   }
 };
 

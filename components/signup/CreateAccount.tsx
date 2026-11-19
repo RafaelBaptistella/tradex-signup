@@ -17,7 +17,7 @@ import { StepHeader, TextField, PrimaryButton, HelpButton, SignupVisual, Lines, 
 import { SIGNUP_STEPS } from '@/lib/flow';
 import { setFlow, rememberBrand, stepProps, track } from '@/lib/track';
 import { register } from '@/lib/mockApi';
-import { useEU } from '@/lib/compliance';
+import { openNames, useEU } from '@/lib/compliance';
 
 const EMAIL = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
 
@@ -154,7 +154,7 @@ export default function CreateAccount({ flow = 'a' }: { flow?: keyof typeof FLOW
       <SignupVisual>
         <aside className={s.sideBenefit} aria-label="Main benefit">
           <p className={s.sideBenefitKicker}>Monthly rewards for top traders</p>
-          <p className={s.sideBenefitText}>{eu ? 'Trade on Pionex through TradeX to climb the leaderboard. Each month, the top traders share a prize pool.' : 'Trade on Bitunix or Pionex through TradeX to climb the leaderboard. Each month, the top traders share a prize pool.'}</p>
+          <p className={s.sideBenefitText}>{`Trade on ${openNames(eu)} through TradeX to climb the leaderboard. Each month, the top traders share a prize pool.`}</p>
         </aside>
       </SignupVisual>
 

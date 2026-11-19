@@ -1,6 +1,6 @@
 .banner {
-  position: fixed; left: 50%; bottom: 24px; z-index: 900; transform: translateX(-50%);
-  width: min(560px, calc(100vw - 32px)); box-sizing: border-box; padding: 20px;
+  position: fixed; right: 24px; bottom: 24px; z-index: 900;
+  width: min(400px, calc(100vw - 32px)); box-sizing: border-box; padding: 20px;
   display: flex; flex-direction: column; gap: 16px;
   border: 1px solid rgba(255, 255, 255, 0.12); border-radius: var(--tx-radius-panel);
   background: rgba(10, 13, 18, 0.96); color: var(--tx-fg); box-shadow: 0 16px 48px rgba(0, 0, 0, 0.5);
@@ -16,4 +16,4 @@
 }
 .btn:hover { background: rgba(255, 255, 255, 0.12); }
 .link { align-self: flex-start; font-size: 14px; color: var(--tx-fg-soft); text-decoration: underline; text-underline-offset: 3px; }
-@media (max-width: 720px) { .banner { bottom: 64px; } }
+@media (max-width: 720px) { .banner { right: 16px; bottom: 64px; } }
