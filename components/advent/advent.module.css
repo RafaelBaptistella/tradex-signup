@@ -1,0 +1,119 @@
+/* Advent Calendar (wireframe, Nov 19, 2026). TradeX dark glass; Kraken purple kept for the sponsor mark and today only. */
+.page {
+  --kr: #7132f5; --kr-rgb: 113, 50, 245; --kr-soft: #b9a2ff;
+  display: flex; flex-direction: column; gap: 16px; color: #fff;
+}
+
+/* Header: product pattern on the left, countdown on the right */
+.head { display: flex; align-items: flex-end; justify-content: space-between; gap: 24px; flex-wrap: wrap; }
+.headText { display: flex; flex-direction: column; gap: 6px; }
+.sponsor { margin: 0; display: inline-flex; align-items: center; gap: 8px; font-size: 13px; color: rgba(255, 255, 255, 0.6); }
+.title { margin: 0; font-size: 28px; font-weight: 600; letter-spacing: -0.01em; }
+.sub { margin: 0; font-size: 14px; color: rgba(255, 255, 255, 0.7); }
+.kraken { display: inline-flex; align-items: center; gap: 4px; color: var(--kr-soft); font-weight: 700; font-size: 15px; letter-spacing: -0.02em; }
+.kraken svg { width: 18px; height: 18px; }
+.krakenBig { font-size: 30px; gap: 8px; }
+.krakenBig svg { width: 40px; height: 40px; }
+/* Live stream: one quiet line under the subtitle */
+/* Right side of the header: countdown, then the live stream line with its button */
+.drawBox { display: flex; flex-direction: column; align-items: flex-end; gap: 10px; }
+.liveRow { display: flex; align-items: center; gap: 12px; }
+.live { display: inline-flex; align-items: center; gap: 8px; font-size: 13px; color: rgba(255, 255, 255, 0.7); }
+.liveBtn { display: inline-flex; align-items: center; height: 32px; padding: 0 12px; border-radius: 8px; border: 1px solid rgba(255, 255, 255, 0.18); background: rgba(255, 255, 255, 0.06); color: #fff; font-size: 13px; font-weight: 500; text-decoration: none; }
+.liveBtn:hover { background: rgba(255, 255, 255, 0.12); }
+.liveDot { width: 8px; height: 8px; border-radius: 50%; background: #ff4d4d; box-shadow: 0 0 0 3px rgba(255, 77, 77, 0.2); }
+.countdown { display: flex; align-items: center; gap: 12px; }
+.countLabel { font-size: 14px; color: rgba(255, 255, 255, 0.7); }
+.countBoxes { display: flex; gap: 6px; }
+.countBox { min-width: 56px; display: flex; flex-direction: column; align-items: center; padding: 8px 6px 6px; border-radius: 8px; background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1); }
+.countBox b { font-size: 20px; font-weight: 600; font-variant-numeric: tabular-nums; line-height: 1.1; }
+.countBox small { font-size: 11px; color: rgba(255, 255, 255, 0.5); }
+
+/* Kraken requirement: full-width banner, same pattern as the dashboard banners */
+.banner { display: flex; align-items: center; gap: 14px; padding: 12px 12px 12px 14px; border-radius: 12px; background: rgba(255, 255, 255, 0.06); border: 1px solid rgba(255, 255, 255, 0.14); }
+.bannerOn { background: rgba(255, 255, 255, 0.03); border-color: rgba(255, 255, 255, 0.1); }
+.bannerIcon { width: 36px; height: 36px; flex: none; display: grid; place-items: center; border-radius: 10px; background: rgba(var(--kr-rgb), 0.18); color: var(--kr-soft); }
+.bannerText { flex: 1; margin: 0; display: flex; flex-direction: column; gap: 2px; }
+.bannerText b { font-size: 15px; font-weight: 600; }
+.bannerText span { font-size: 13px; color: rgba(255, 255, 255, 0.65); }
+.bannerBtn { flex: none; height: 40px; padding: 0 18px; border: 0; border-radius: 8px; background: #fff; color: #000; font: inherit; font-size: 15px; font-weight: 500; cursor: pointer; }
+.bannerBtn:hover { background: rgba(255, 255, 255, 0.9); }
+.inPot { flex: none; display: inline-flex; align-items: center; gap: 8px; height: 32px; padding: 0 12px; border-radius: 99px; background: rgba(74, 222, 128, 0.1); color: #8ef0b0; font-size: 13px; font-weight: 500; }
+.okDot { width: 8px; height: 8px; border-radius: 50%; background: #4ade80; }
+
+/* Legend */
+.legend { display: flex; gap: 16px; font-size: 12px; color: rgba(255, 255, 255, 0.6); }
+.legend span { display: inline-flex; align-items: center; gap: 6px; }
+.legend i { width: 12px; height: 12px; border-radius: 3px; }
+.legendDrawn { background: #1a202b; border: 1px solid rgba(255, 255, 255, 0.22); }
+.legendToday { background: rgba(var(--kr-rgb), 0.25); border: 1px solid var(--kr); }
+.legendNext { background: radial-gradient(120% 120% at 0% 0%, rgba(113, 50, 245, 0.45), #0a0d14 70%); border: 1px solid rgba(255, 255, 255, 0.1); }
+
+/* Bento: 8 × 5, each card with its own pattern; coming-up days are "wrapped", drawn days are "opened" */
+.bento { margin: 0; padding: 0; list-style: none; display: grid; grid-template-columns: repeat(8, minmax(0, 1fr)); grid-auto-rows: 104px; gap: 8px; }
+.cell {
+  position: relative; overflow: hidden; display: flex; flex-direction: column; justify-content: flex-end; gap: 2px; padding: 10px 12px;
+  border-radius: 12px; border: 1px solid rgba(255, 255, 255, 0.08); --fg: #fff; --line: rgba(255, 255, 255, 0.05); color: var(--fg);
+}
+/* Coming up: no patterns. A faint purple lantern from one corner (as on the paywalls), the rest of the card stays near black. */
+.tone_ink, .tone_violet, .tone_blue, .tone_light { background-color: #0a0d14; }
+.tone_ink { background-image: radial-gradient(90% 120% at 0% 0%, rgba(var(--kr-rgb), 0.13) 0%, rgba(var(--kr-rgb), 0.03) 45%, transparent 70%); }
+.tone_violet { background-image: radial-gradient(90% 120% at 100% 0%, rgba(var(--kr-rgb), 0.13) 0%, rgba(var(--kr-rgb), 0.03) 45%, transparent 70%); }
+.tone_blue { background-image: radial-gradient(90% 120% at 0% 100%, rgba(var(--kr-rgb), 0.11) 0%, rgba(var(--kr-rgb), 0.025) 45%, transparent 70%); }
+.tone_light { background-image: radial-gradient(90% 120% at 100% 100%, rgba(var(--kr-rgb), 0.11) 0%, rgba(var(--kr-rgb), 0.025) 45%, transparent 70%); }
+
+.num { position: absolute; top: 8px; left: 12px; z-index: 1; font-size: 24px; font-weight: 500; line-height: 1; letter-spacing: -0.02em; }
+.big .num { font-size: 40px; }
+.word { position: absolute; top: 10px; right: 12px; z-index: 1; font-size: 13px; font-style: italic; color: rgba(255, 255, 255, 0.55); }
+/* Prize icons: one outline style, centred in the card, kept light. */
+/* Prize icons: one outline style, big, in the background, bleeding off the bottom-right corner (the card clips them), very light. */
+.icon { position: absolute; right: -14px; bottom: -22px; width: 104px; height: 104px; opacity: 0.02; pointer-events: none; }
+.iconLarge { width: 120px; height: 120px; }
+.big .icon { width: 200px; height: 200px; right: -30px; bottom: -40px; }
+.wide:not(.big) .icon { width: 120px; height: 120px; }
+.big .iconLarge { width: 220px; height: 220px; }
+.icon svg { width: 100%; height: 100%; display: block; }
+.hint { font-size: 11px; color: rgba(255, 255, 255, 0.5); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+/* Coming up: wrapped (pattern), number in front */
+.state_future .num { color: rgba(255, 255, 255, 0.8); }
+.cell > :not(.icon) { position: relative; z-index: 1; }
+.cell > .num, .cell > .word, .cell > .drawnTag, .cell > .todayTag { position: absolute; }
+
+/* Drawn: opened. Solid surface, no pattern, the prize in front, the number small */
+.state_past { background: #141a24; background-image: none; border-color: rgba(255, 255, 255, 0.16); }
+.state_past .num { font-size: 13px; font-weight: 500; color: rgba(255, 255, 255, 0.5); top: 11px; }
+/* Drawn: the icon is a small, normal one in the bottom-right corner. */
+.state_past .icon, .big.state_past .icon, .wide.state_past .icon, .state_past .iconLarge { right: 12px; bottom: 12px; width: 20px; height: 20px; opacity: 0.55; }
+.state_today .icon { opacity: 0.04; }
+.drawnTag { position: absolute; top: 8px; right: 10px; display: inline-flex; align-items: center; gap: 4px; padding: 1px 8px; border-radius: 99px; background: rgba(74, 222, 128, 0.12); color: #8ef0b0; font-size: 11px; font-weight: 500; }
+.prize { display: flex; flex-direction: column; font-size: 12px; color: rgba(255, 255, 255, 0.7); line-height: 1.3; }
+.prize b { font-size: 15px; font-weight: 600; color: #fff; }
+.big .prize b { font-size: 26px; }
+.winner { font-size: 11px; color: rgba(255, 255, 255, 0.5); }
+
+/* Today: the only card with the sponsor colour */
+.state_today { background: rgba(var(--kr-rgb), 0.12); background-image: none; border: 1px solid rgba(var(--kr-rgb), 0.8); }
+.todayTag { position: absolute; top: 8px; right: 10px; padding: 1px 8px; border-radius: 99px; background: rgba(var(--kr-rgb), 0.3); color: #e4dbff; font-size: 11px; font-weight: 500; }
+.todayRow { display: flex; align-items: flex-end; justify-content: space-between; gap: 8px; }
+.todayRow .prize b { font-size: 14px; }
+.cellBtn { flex: none; height: 28px; padding: 0 12px; border: 0; border-radius: 6px; background: #fff; color: #000; font: inherit; font-size: 13px; font-weight: 500; cursor: pointer; }
+.inPotSmall { flex: none; display: inline-flex; align-items: center; gap: 6px; font-size: 13px; font-weight: 500; color: #8ef0b0; }
+
+/* Kraken connect pop-up (shared paywall frame, Kraken colour) */
+.krakenCard { --glow: 113, 50, 245; }
+.modalArt { height: 120px; display: grid; place-items: center; }
+.tileKraken { background: rgba(113, 50, 245, 0.16); border-color: rgba(113, 50, 245, 0.35); }
+.exKraken { --ex: #7132f5; --ex-rgb: 113, 50, 245; color: #fff; }
+
+@media (max-width: 1023px) {
+  .drawBox { align-items: flex-start; }
+  .liveRow { flex-wrap: wrap; }
+  .banner { flex-wrap: wrap; }
+  .bannerBtn { width: 100%; }
+  .bento { grid-template-columns: repeat(2, minmax(0, 1fr)); grid-auto-rows: 128px; }
+  .big { grid-row: span 2 !important; }
+  .cell { grid-area: auto !important; }
+  .wide { grid-column: span 2 !important; }
+  .big .num { font-size: 40px; }
+}

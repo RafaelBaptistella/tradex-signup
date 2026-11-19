@@ -109,6 +109,13 @@ export const EXTRAS: { group: string; screens: Screen[] }[] = [
     ]
   },
   {
+    group: 'New feature (wireframe)',
+    screens: [
+      { id: 'ADV', title: 'Advent Calendar · sponsored by Kraken', path: '/advent', note: 'Sidebar → Advent Calendar' },
+      { id: 'ADV', title: 'Advent Calendar · Kraken connected, ticket taken', path: '/advent?kraken=1&ticket=1' }
+    ]
+  },
+  {
     group: 'Emails',
     screens: [
       { id: 'A-21', title: 'Resume emails · 1h, 24h, 72h', path: '/emails' },

@@ -19,6 +19,7 @@ import { track } from '@/lib/track';
 import { available, openNames, useEU } from '@/lib/compliance';
 import LockedFeatureSheet, { LOCKED_FEATURES, type LockedFeature } from './LockedFeatureSheet';
 import TrialDayModal, { DAYS, DAY_MODAL_KEY } from './TrialDayModal';
+import AdventCalendar from '@/components/advent/AdventCalendar';
 import d from './dashboard.module.css';
 
 /**
@@ -26,8 +27,9 @@ import d from './dashboard.module.css';
  * Ranks & Rewards and Courses stay open. lockC: flow C during the trial (half open; ranks and leaderboards locked).
  */
 type Lock = { lockB?: LockedFeature; lockC?: LockedFeature };
-const NAV: ({ icon: string; label: string; active?: boolean } & Lock)[] = [
-  { icon: 'dashboard', label: 'Dashboard', active: true },
+const NAV: ({ icon: string; label: string; href?: string; isNew?: boolean } & Lock)[] = [
+  { icon: 'dashboard', label: 'Dashboard', href: '/dashboard' },
+  { icon: 'gift', label: 'Advent Calendar', href: '/advent', isNew: true },
   { icon: 'ranks', label: 'Ranks & Rewards', lockC: 'ranking' },
   { icon: 'courses', label: 'Courses' },
   { icon: 'journal', label: 'Trading Journal', lockB: 'journal' },
@@ -77,8 +79,10 @@ const DAY_MS = 86400000;
  *   trial chip, banner and every lock gone, same short celebration as B-09, plus advanced courses open.
  * mode 'c': C-04, flow C during the 7-day trial: countdown chip, connect banner, locks, "Your trial so far" panel. ?day= sets the trial day for demos.
  */
-export default function Dashboard({ mode = 'a', overlay, entry, ended }: {
+export default function Dashboard({ mode = 'a', overlay, entry, ended, view = 'home' }: {
   mode?: 'a' | 'b' | 'b-unlocked' | 'c' | 'c-unlocked'; overlay?: ReactNode;
+  /** 'advent': the Advent Calendar page (new feature) in the main column, same sidebar. */
+  view?: 'home' | 'advent';
   /** 'welcome': C-03, the first entry after C-02; day 1 with its welcome modal open. */
   entry?: 'welcome';
   /** C-09: the trial ended; the dashboard only sits behind the lock wall (no redirects, modals or events). */
@@ -86,7 +90,7 @@ export default function Dashboard({ mode = 'a', overlay, entry, ended }: {
 }) {
   const connected = mode === 'a' || mode === 'b-unlocked' || mode === 'c-unlocked';
   const trial = mode === 'c' && !ended;
-  const firstTour = mode === 'a';
+  const firstTour = mode === 'a' && view === 'home';
   const justUnlocked = mode === 'b-unlocked' || mode === 'c-unlocked';
   const [celebrate, setCelebrate] = useState(justUnlocked);
   const router = useRouter();
@@ -104,6 +108,7 @@ export default function Dashboard({ mode = 'a', overlay, entry, ended }: {
   };
   /** B-07: a locked item opens a sheet about that feature, with the connect button. */
   const [sheet, setSheet] = useState<LockedFeature | null>(null);
+  const isActive = (n: { href?: string }) => (view === 'advent' ? n.href === '/advent' : n.href === '/dashboard');
   const lockOf = (x: Lock) => (connected ? undefined : mode === 'b' ? x.lockB : x.lockC);
   const locked = (feature: string) => {
     track('locked_feature_clicked', { feature, ...(trial ? { trial_day: trialDay } : {}) });
@@ -266,9 +271,10 @@ export default function Dashboard({ mode = 'a', overlay, entry, ended }: {
           <div className={d.navLabel}>Platform</div>
           <nav className={d.nav} aria-label="Main">
             {NAV.map((n) => (
-              <a key={n.label} href="#" className={`${d.navItem} ${n.active ? d.navActive : ''}`} aria-current={n.active ? 'page' : undefined}
-                onClick={(e) => { e.preventDefault(); const k = lockOf(n); if (k) locked(k); }}>
+              <a key={n.label} href={n.href ?? '#'} className={`${d.navItem} ${isActive(n) ? d.navActive : ''}`} aria-current={isActive(n) ? 'page' : undefined}
+                onClick={(e) => { e.preventDefault(); const k = lockOf(n); if (k) { locked(k); return; } if (n.href === '/advent') { track('advent_nav_clicked', { from: view }); router.push('/advent'); } else if (n.href && view !== 'home') router.push(n.href); }}>
                 <Image src={`/dashboard/icons/${n.icon}.svg`} alt="" width={20} height={20} />{n.label}
+                {n.isNew && <span className={d.navNew}>New</span>}
                 {lockOf(n) && <span className={d.navLock} aria-label="Locked"><Image src="/dashboard/icons/lock.svg" alt="" width={12} height={12} /></span>}
               </a>
             ))}
@@ -320,6 +326,7 @@ export default function Dashboard({ mode = 'a', overlay, entry, ended }: {
       </aside>
 
       <main className={d.main}>
+        {view === 'advent' ? <AdventCalendar /> : (<>
         {celebrate && (
           <div className={`${d.banner} ${d.celebrate}`} role="status">
             <span className={d.bannerIcon} aria-hidden><Image src="/signup/check.svg" alt="" width={16} height={16} /></span>
@@ -402,6 +409,7 @@ export default function Dashboard({ mode = 'a', overlay, entry, ended }: {
             </a>
           ))}
         </section>
+        </>)}
       </main>
 
       {((firstTour && tourStep === null) || trial) && (
