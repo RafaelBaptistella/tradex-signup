@@ -565,7 +565,7 @@
 .rankWords span:last-child { margin-bottom: 0; -webkit-text-stroke: 0; background: linear-gradient(180deg, rgba(255, 255, 255, 0.28), rgba(255, 255, 255, 0.7)); -webkit-background-clip: text; background-clip: text; }
 .rankGem { position: absolute; left: 50%; top: calc(50% + 22px); width: 276px; height: 276px; transform: translate(-50%, -50%); opacity: 0.9; }
 .rankKicker { position: absolute; top: 30px; left: 0; right: 0; margin: 0; text-align: center; font-size: 24px; font-weight: 600; text-transform: uppercase; color: #fff718; opacity: 0.85; text-shadow: 0 0 14.65px rgba(255, 250, 121, 0.55); }
-.connectedBadge { display: inline-flex; align-self: flex-start; align-items: center; gap: 8px; margin: 0 0 4px; padding: 4px 10px 4px 6px; border-radius: 99px; background: rgba(116, 211, 251, 0.12); color: var(--tx-accent); font-size: 14px; font-weight: 500; }
+.connectedBadge { display: inline-flex; align-self: center; align-items: center; gap: 8px; margin: 0 0 4px; padding: 4px 10px 4px 6px; border-radius: 99px; background: rgba(116, 211, 251, 0.12); color: var(--tx-accent); font-size: 14px; font-weight: 500; }
 .connectedBadge .cardLogo { height: 20px; }
 .welcomeTitle { margin: 0; font-size: 24px; font-weight: 500; line-height: 1.2; letter-spacing: -0.96px; }
 .welcomeLead { margin: 0; font-size: 18px; line-height: 1.5; color: var(--tx-fg-soft); }
