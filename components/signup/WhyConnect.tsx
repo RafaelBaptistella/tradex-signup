@@ -4,7 +4,7 @@
  * Flow A · A-06 · Why connect an exchange (step 5 of 6).
  * Canvas requirements: explain the connect step before the ask: why TradeX needs the trading volume (leaderboard + ranks), that it's safe, no API keys.
  * 3-step visual (trade → volume tracked → leaderboard and ranks), safety line (TradeX never holds your funds or keys),
- * FAQ accordion, CTA "Connect exchange" with "Explore first" as the secondary (counts as skip).
+ * FAQ accordion, CTA "Connect exchange". Flow A has no "Explore first" (removed Nov 19, 2026).
  * Events: connect_explainer_viewed, connect_explainer_skipped.
  */
 import Image from 'next/image';
@@ -60,11 +60,6 @@ export default function WhyConnect() {
     track('connect_explainer_viewed', P);
   }, []);
 
-  const explore = () => {
-    track('connect_explainer_skipped', P);
-    router.push('/explore');
-  };
-
   return (
     <main className={s.centerPage}>
       <div className={s.mountains} aria-hidden><div className={s.noise} /></div>
@@ -110,7 +105,6 @@ export default function WhyConnect() {
 
           <div className={s.choiceActions}>
             <PrimaryButton onClick={() => router.push('/exchange')}>Connect exchange</PrimaryButton>
-            <button type="button" className={s.inlineLink} onClick={explore}>Explore first</button>
             {eu && <Disclosure />}
           </div>
         </div>

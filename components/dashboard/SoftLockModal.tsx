@@ -51,7 +51,7 @@ export default function SoftLockModal() {
       sections={[{ items: [
         { icon: 'trophy', text: 'A spot on the monthly leaderboard' },
         { icon: 'skill-level', text: '10 ranks, each with exclusive rewards' },
-        { icon: 'education', text: 'Courses and community stay open', state: 'open' }
+        { icon: 'education', text: 'Courses and your rank path stay open', state: 'open' }
       ] }]}
       exchanges
       primary={{ label: (n) => `Connect ${n}`, onClick: (ex) => { track('exchange_connect_started', { source: 'softlock_modal', exchange: ex }); router.push(connectPath('b', ex)); } }}

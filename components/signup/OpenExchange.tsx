@@ -10,7 +10,7 @@
 import Image from 'next/image';
 import { useEffect, useRef, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { StepHeader, PrimaryButton, Lines, Callout, Shot, styles as s } from './parts';
+import { StepHeader, PrimaryButton, Lines, Shot, ConnectCta, styles as s } from './parts';
 import HelpDrawer from './HelpDrawer';
 import { AFFILIATE, REGISTER_PRINT, exchangeById } from '@/lib/exchanges';
 import { brand, track } from '@/lib/track';
@@ -56,66 +56,51 @@ export default function OpenExchange() {
   const next = () => router.push(`/connect/signup?exchange=${ex.id}`);
 
   return (
-    <main className={s.centerPage}>
-      <div className={s.mountains} aria-hidden><div className={s.noise} /></div>
-      <div className={s.grid} aria-hidden />
-
+    <>
       <div className={s.centerMain}>
         <StepHeader step={1} total={CONNECT_STEPS} onBack={() => router.push(`/connect?exchange=${ex.id}`)} />
 
-        <div className={`${s.centerContent} ${s.medium}`}>
-          <div className={s.intro}>
+        <div className={s.connectBody}>
+          <div className={s.connectIntro}>
             <h1 className={s.title}>Open {ex.name} through TradeX</h1>
             <p className={s.lead}><Lines text={`Use our button, so ${ex.name} knows you came from TradeX. That’s what makes your volume count.`} /></p>
           </div>
 
-          <section className={s.planBlock} aria-labelledby="code-title">
-            <h2 id="code-title" className={s.questionLabel}>Your TradeX code</h2>
-            <div className={s.planCard}>
+          <div className={s.connectSplit}>
+            <section className={s.planCard} aria-labelledby="code-title">
+              <h2 id="code-title" className={s.questionLabel}>Your TradeX code</h2>
               <div className={s.codeRow}>
                 <span className={s.refCode}>{code}</span>
                 <button type="button" className={`${s.volumeChip} ${s.copyBtn}`} onClick={copy} aria-live="polite">
                   <Image src="/signup/icons/copy.svg" alt="" width={16} height={16} />{copied ? 'Copied' : 'Copy'}
                 </button>
               </div>
-              <p className={s.hint}><Lines text={`It should already be filled in on the ${ex.name} sign-up form. If the field is empty, paste it there.`} /></p>
-            </div>
-          </section>
+              <p className={s.hint}><Lines text={`It should already be filled in on the ${ex.name} sign-up form. If “${REGISTER_PRINT[ex.id].field}” is empty, paste it there.`} /></p>
+              {phase !== 'before' && (
+                <p className={`${s.hint} ${s.hintOk}`} role="status">
+                  <Lines text={phase === 'returned' ? `Back already? If ${ex.name} didn’t open, open it again.` : `${ex.name} is open in a new tab. Sign up there, then come back.`} />
+                </p>
+              )}
+            </section>
 
-          <section className={s.planBlock} aria-labelledby="preview-title">
-            <h2 id="preview-title" className={s.questionLabel}>What you’ll see on {ex.name}</h2>
-            <figure className={s.preview}>
+            <figure className={s.preview} aria-label={`What you’ll see on ${ex.name}`}>
               <Shot {...REGISTER_PRINT[ex.id].print} />
-              <figcaption className={s.hint}>
-                {ex.id === 'bitunix' ? 'Open' : 'Look at'} “{REGISTER_PRINT[ex.id].field}” and check it shows <b>{code}</b>.
-              </figcaption>
             </figure>
-          </section>
-
-          {phase === 'before' && (
-            <div className={s.choiceActions}>
-              <PrimaryButton onClick={open}>Open {ex.name}</PrimaryButton>
-              <p className={s.hint}><Lines text="Opens in a new tab. Keep this one open: we guide you after each step." /></p>
-            </div>
-          )}
-
-          {phase !== 'before' && (
-            <>
-              {phase === 'returned'
-                ? <Callout title={`Back already? No problem`}>If the {ex.name} page didn’t open, or the code field was empty, open it again. Once you have signed up, continue.</Callout>
-                : <Callout title={`${ex.name} is open in a new tab`}>Fill in the sign-up form there, then come back to this tab.</Callout>}
-              <div className={s.choiceActions}>
-                <PrimaryButton onClick={next}>I’ve opened the sign-up form</PrimaryButton>
-                <button type="button" className={s.inlineLink} onClick={open}>Open {ex.name} again</button>
-              </div>
-            </>
-          )}
+          </div>
         </div>
-
-        <div className={s.spacer} aria-hidden />
       </div>
 
+      {phase === 'before' ? (
+        <ConnectCta note={<Lines text="Opens in a new tab. Keep this one open: we guide you after each step." />}>
+          <PrimaryButton onClick={open}>Open {ex.name}</PrimaryButton>
+        </ConnectCta>
+      ) : (
+        <ConnectCta note={<button type="button" className={s.inlineLink} onClick={open}>Open {ex.name} again</button>}>
+          <PrimaryButton onClick={next}>I’ve opened the sign-up form</PrimaryButton>
+        </ConnectCta>
+      )}
+
       <HelpDrawer step="connect_open" exchange={ex.name} exchangeId={ex.id} />
-    </main>
+    </>
   );
 }

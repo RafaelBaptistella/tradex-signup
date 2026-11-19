@@ -6,12 +6,13 @@
  * with a link back to the right step; reminder of what unlocks once confirmed.
  * States: empty, typing / valid format, invalid format, UID already used, submitting.
  * Events: connect_step_viewed {5: uid}, uid_submitted {exchange}, uid_error {reason}.
+ * Nov 19, 2026: the UID field is the hero of the screen (big, centred, exchange colour, focused on arrival).
  */
 import Image from 'next/image';
 import Link from 'next/link';
 import { useEffect, useRef, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { StepHeader, PrimaryButton, Lines, styles as s } from './parts';
+import { StepHeader, PrimaryButton, Lines, ConnectCta, styles as s } from './parts';
 import HelpDrawer from './HelpDrawer';
 import { AFFILIATE, exchangeById } from '@/lib/exchanges';
 import { brand, track } from '@/lib/track';
@@ -46,6 +47,7 @@ export default function PasteUid() {
   const [serverError, setServerError] = useState<Problem | null>(null);
   const [busy, setBusy] = useState(false);
   const viewed = useRef(false);
+  const inputRef = useRef<HTMLInputElement>(null);
   const P = { step_number: 5, step_name: 'uid', exchange: ex.id };
   const codes = Object.values(AFFILIATE[ex.id].codes);
 
@@ -53,6 +55,7 @@ export default function PasteUid() {
     if (viewed.current) return;
     viewed.current = true;
     track('connect_step_viewed', P);
+    inputRef.current?.focus();
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   const value = uid.trim();
@@ -86,34 +89,32 @@ export default function PasteUid() {
   };
 
   return (
-    <main className={s.centerPage}>
-      <div className={s.mountains} aria-hidden><div className={s.noise} /></div>
-      <div className={s.grid} aria-hidden />
-
+    <>
       <div className={s.centerMain}>
         <StepHeader step={5} total={CONNECT_STEPS} onBack={() => router.push(`/connect/uid?exchange=${ex.id}`)} />
 
-        <form className={`${s.centerContent} ${s.medium}`} onSubmit={submit} noValidate>
-          <div className={s.intro}>
+        <form id="uid-form" className={s.connectBody} onSubmit={submit} noValidate>
+          <div className={s.connectIntro}>
+            <p className={s.lastStep}>Last step</p>
             <h1 className={s.title}>Paste your UID</h1>
-            <p className={s.lead}><Lines text={`The UID you copied from ${ex.name}. We use it to link your account to TradeX.`} /></p>
+            <p className={s.lead}><Lines text={`The number you copied from ${ex.name}. Then your TradeX account opens with ${ex.name} connected.`} /></p>
           </div>
 
-          <div className={s.field}>
-            <label htmlFor="uid" className={s.label}>{ex.name} UID</label>
-            <div className={s.passwordWrap}>
+          <div className={s.uidHero}>
+            <label htmlFor="uid" className={s.uidHeroLabel}>{ex.name} UID</label>
+            <div className={s.uidHeroWrap}>
               <input
-                id="uid" className={`${s.input} ${s.uidInput} ${problem ? s.inputError : valid ? s.inputOk : ''}`}
+                id="uid" ref={inputRef} className={`${s.uidHeroInput} ${problem ? s.uidHeroError : valid ? s.uidHeroOk : ''}`}
                 inputMode="numeric" autoComplete="off" placeholder="123456789" value={uid} disabled={busy}
                 aria-invalid={Boolean(problem)} aria-describedby="uid-status"
                 onChange={(e) => { setUid(e.target.value); setServerError(null); }}
                 onBlur={() => { setTouched(true); if (formatProblem) track('uid_error', { ...P, reason: formatProblem.reason, on: 'blur' }); }}
               />
-              <button type="button" className={`${s.passwordToggle} ${s.copyBtn}`} onClick={paste} disabled={busy}>
+              <button type="button" className={s.uidHeroPaste} onClick={paste} disabled={busy}>
                 <Image src="/signup/icons/copy.svg" alt="" width={14} height={14} />Paste
               </button>
             </div>
-            <div id="uid-status" aria-live="polite">
+            <div id="uid-status" className={s.uidHeroStatus} aria-live="polite">
               {problem ? (
                 <p className={s.error} role="alert">
                   <Lines text={problem.text} />
@@ -127,28 +128,19 @@ export default function PasteUid() {
             </div>
           </div>
 
-          <section className={s.planBlock} aria-labelledby="unlocks-title">
-            <h2 id="unlocks-title" className={s.questionLabel}>Once it’s confirmed</h2>
-            <ul className={s.planList}>
-              {UNLOCKS.map((u) => (
-                <li key={u} className={`${s.welcomeCard} ${s.iconRow}`}>
-                  <Image src="/signup/check.svg" alt="" width={16} height={16} />
-                  <span className={s.welcomeCardTitle}>{u}</span>
-                </li>
-              ))}
-            </ul>
-          </section>
-
-          <div className={s.choiceActions}>
-            <PrimaryButton type="submit" disabled={busy}>{busy ? 'Connecting…' : `Connect my ${ex.name} account`}</PrimaryButton>
-            <p className={s.hint}>Last step. Then TradeX opens.</p>
-          </div>
+          <ul className={s.unlockChips} aria-label="Once it’s confirmed">
+            {UNLOCKS.map((u) => (
+              <li key={u}><Image src="/signup/check.svg" alt="" width={14} height={14} />{u}</li>
+            ))}
+          </ul>
         </form>
-
-        <div className={s.spacer} aria-hidden />
       </div>
 
+      <ConnectCta note="One click and you’re in.">
+        <PrimaryButton type="submit" form="uid-form" disabled={busy}>{busy ? 'Connecting…' : `Connect my ${ex.name} account`}</PrimaryButton>
+      </ConnectCta>
+
       <HelpDrawer step="connect_uid" exchange={ex.name} exchangeId={ex.id} />
-    </main>
+    </>
   );
 }

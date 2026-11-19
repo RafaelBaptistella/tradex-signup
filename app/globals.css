@@ -41,3 +41,5 @@ a { color: inherit; }
 /* No widow words: short last lines get balanced into the line above. */
 p, li, dd, legend, label { text-wrap: pretty; }
 h1, h2, h3 { text-wrap: balance; }
+/* The scrollbar never shifts centred content sideways (the connect CTA stays put). */
+html { scrollbar-gutter: stable; }

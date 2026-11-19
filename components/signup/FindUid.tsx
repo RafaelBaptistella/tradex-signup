@@ -8,7 +8,7 @@
  */
 import { useEffect, useRef } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { StepHeader, PrimaryButton, Lines, Shot, styles as s } from './parts';
+import { StepHeader, PrimaryButton, Lines, Shot, ConnectCta, styles as s } from './parts';
 import HelpDrawer from './HelpDrawer';
 import { exchangeById, type ExchangeId, type Print } from '@/lib/exchanges';
 import { track } from '@/lib/track';
@@ -46,52 +46,45 @@ export default function FindUid() {
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   return (
-    <main className={s.centerPage}>
-      <div className={s.mountains} aria-hidden><div className={s.noise} /></div>
-      <div className={s.grid} aria-hidden />
-
+    <>
       <div className={s.centerMain}>
         <StepHeader step={4} total={CONNECT_STEPS} onBack={() => router.push(`/connect/kyc?exchange=${ex.id}`)} />
 
-        <div className={`${s.centerContent} ${s.medium}`}>
-          <div className={s.intro}>
+        <div className={s.connectBody}>
+          <div className={s.connectIntro}>
             <h1 className={s.title}>Find your UID</h1>
             <p className={s.lead}><Lines text={`Your UID is your account number on ${ex.name}. You’ll paste it on the next screen.`} /></p>
           </div>
 
-          <div className={s.subStep}>
-            <ol className={s.uidSteps}>
-              {guide.steps.map((st, i) => (
-                <li key={st.title} className={s.subStepHead}>
-                  <span className={s.flowStepNum}>{i + 1}</span>
-                  <div>
-                    <h2 className={s.welcomeCardTitle}>{st.title}</h2>
-                    <p className={s.welcomeCardText}><Lines text={st.text} /></p>
-                  </div>
-                </li>
-              ))}
-            </ol>
+          <div className={s.connectSplit}>
+            <div className={s.subStep}>
+              <ol className={s.uidSteps}>
+                {guide.steps.map((st, i) => (
+                  <li key={st.title} className={s.subStepHead}>
+                    <span className={s.flowStepNum}>{i + 1}</span>
+                    <div>
+                      <h2 className={s.welcomeCardTitle}>{st.title}</h2>
+                      <p className={s.welcomeCardText}><Lines text={st.text} /></p>
+                    </div>
+                  </li>
+                ))}
+              </ol>
+              <div className={s.uidSample}>
+                <span className={s.questionLabel}>What a UID looks like</span>
+                <span className={s.refCode}>123456789</span>
+                <p className={s.hint}><Lines text="Only numbers. It’s not your email, and not the TradeX code." /></p>
+              </div>
+            </div>
             <Shot {...guide.print} />
           </div>
-
-          <section className={s.planBlock} aria-labelledby="uid-format">
-            <h2 id="uid-format" className={s.questionLabel}>What a UID looks like</h2>
-            <div className={s.planCard}>
-              <span className={s.refCode}>123456789</span>
-              <p className={s.hint}><Lines text="Only numbers. It’s not your email, and not the TradeX code." /></p>
-            </div>
-          </section>
-
-          <div className={s.choiceActions}>
-            <PrimaryButton onClick={() => router.push(`/connect/paste?exchange=${ex.id}`)}>I’ve copied my UID</PrimaryButton>
-            <p className={s.hint}>Next: paste it here.</p>
-          </div>
         </div>
-
-        <div className={s.spacer} aria-hidden />
       </div>
 
+      <ConnectCta note="Next: paste it here.">
+        <PrimaryButton onClick={() => router.push(`/connect/paste?exchange=${ex.id}`)}>I’ve copied my UID</PrimaryButton>
+      </ConnectCta>
+
       <HelpDrawer step="connect_find_uid" exchange={ex.name} exchangeId={ex.id} />
-    </main>
+    </>
   );
 }

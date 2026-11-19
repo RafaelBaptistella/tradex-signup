@@ -56,14 +56,12 @@ export default function ConnectFailed() {
   );
 
   return (
-    <main className={s.centerPage}>
-      <div className={s.mountains} aria-hidden><div className={s.noise} /></div>
-      <div className={s.grid} aria-hidden />
+    <>
 
       <div className={s.centerMain}>
         <div aria-hidden />
-        <div className={`${s.centerContent} ${s.medium}`}>
-          <div className={s.intro}>
+        <div className={`${s.connectBody} ${s.connectNarrow}`}>
+          <div className={s.connectIntro}>
             <p className={s.warnBadge}>Not connected yet</p>
             <h1 className={s.title}>{copy.title}</h1>
             <p className={s.lead}><Lines text={copy.text} /></p>
@@ -91,6 +89,6 @@ export default function ConnectFailed() {
         <h2>Why does this happen?</h2>
         <p>Only accounts opened with the TradeX link count for the leaderboard and ranks. If the link wasn’t used, or the code field was empty, {ex.name} can’t tell the account came from TradeX.</p>
       </HelpButton>
-    </main>
+    </>
   );
 }

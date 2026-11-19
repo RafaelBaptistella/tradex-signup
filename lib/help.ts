@@ -34,6 +34,8 @@ export const HELP: Record<HelpStep, { number: number; name: string; video: strin
     faq: [
       { q: 'My photo was rejected', a: 'Take it again in good light, with all four corners of the ID in the frame and no glare.' },
       { q: 'The face check failed', a: 'Look straight at the camera, take off glasses or a hat, and make sure your face is well lit.' },
+      { q: 'It says my document is wrong', a: 'Use a valid ID card or passport, and pick the country that issued it, not the one you live in.' },
+      { q: 'My ID is already verified on another {ex} account', a: '{ex} verifies one account per identity. Talk to TradeX support before you continue, so we can help with the next step.' },
       { q: 'It says “under review”', a: 'That’s fine. You can continue: your UID is ready already.' }
     ]
   },

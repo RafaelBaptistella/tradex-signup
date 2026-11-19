@@ -13,6 +13,9 @@ import { styles as s } from './parts';
 import { HELP, DISCORD_SUPPORT, fill, type HelpStep } from '@/lib/help';
 import { track } from '@/lib/track';
 
+/** Window event that opens the drawer from anywhere on the screen. */
+export const OPEN_HELP = 'tx-help-open';
+
 export default function HelpDrawer({ step, exchange, exchangeId }: { step: HelpStep; exchange: string; exchangeId: string }) {
   const [open, setOpen] = useState(false);
   const [faq, setFaq] = useState<number | null>(null);
@@ -31,6 +34,13 @@ export default function HelpDrawer({ step, exchange, exchangeId }: { step: HelpS
   }, [open]);
 
   const show = () => { track('connect_help_opened', P); setOpen(true); };
+
+  // Screens can open the drawer from a link of their own (A-12 "See common problems").
+  useEffect(() => {
+    const onOpen = () => { track('connect_help_opened', { ...P, source: 'inline_link' }); setOpen(true); };
+    window.addEventListener(OPEN_HELP, onOpen);
+    return () => window.removeEventListener(OPEN_HELP, onOpen);
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
   const ask = (i: number) => {
     if (faq !== i) track('connect_help_faq_opened', { ...P, question: h.faq[i].q });
     setFaq(faq === i ? null : i);

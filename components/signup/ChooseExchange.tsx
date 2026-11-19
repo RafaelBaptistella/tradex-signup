@@ -1,7 +1,8 @@
 'use client';
 
 /**
- * Flow A · A-07 · Choose your exchange · guided (step 6 of 6), with A-08 and A-08b as a sheet.
+ * Flow A · A-07 · Choose your exchange · guided (step 6 of 6).
+ * Nov 19, 2026: the "Already have an account?" sheet (A-08, A-08b) and "Explore first" are gone; Continue opens A-09.
  * Based on Figma "Connect Exchange" (962:5371 desktop, 979:2893 mobile) and its modal (964:5925).
  * Canvas requirements (A-07): recommended exchange pre-selected from the A-04 answers, a side-by-side
  * comparison in plain words, a "Not sure? Take our pick" button, a short 30 s explainer video.
@@ -15,7 +16,7 @@
 import Image from 'next/image';
 import { useEffect, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { StepHeader, HelpButton, Lines, PrimaryButton, Disclosure, styles as s } from './parts';
+import { StepHeader, HelpButton, Lines, PrimaryButton, Disclosure, Tag, styles as s } from './parts';
 import { available, rules, useEU } from '@/lib/compliance';
 import { EXCHANGES, readProfile, recommend, type Exchange, type ExchangeId } from '@/lib/exchanges';
 import { SIGNUP_STEPS } from '@/lib/flow';
@@ -27,7 +28,6 @@ export default function ChooseExchange() {
   const router = useRouter();
   const [pick, setPick] = useState<{ id: ExchangeId; reason: string }>({ id: 'bitunix', reason: 'Best for beginners' });
   const [selected, setSelected] = useState<ExchangeId>('bitunix');
-  const [sheet, setSheet] = useState<null | 'ask' | 'fresh'>(null);
   const [videoOpen, setVideoOpen] = useState(false);
   const viewed = useRef(false);
   // In flows B and C people are already inside TradeX: no 6-step signup header, and Back returns to where they came from.
@@ -57,28 +57,12 @@ export default function ChooseExchange() {
   }, [eu]);
 
   const current = EXCHANGES.find((e) => e.id === selected)!;
-  const other = EXCHANGES.find((e) => e.id !== selected)!;
-  const otherOpen = available(other.id, eu);
+  const otherOpen = EXCHANGES.every((e) => available(e.id, eu));
 
   const confirm = (id: ExchangeId) => {
     setSelected(id);
     track('exchange_selected', { ...P, exchange: id, recommended: id === pick.id });
-    setSheet('ask');
-  };
-
-  const answer = (has: boolean) => {
-    track('exchange_has_account', { ...P, exchange: selected, has_existing_account: has });
-    if (!has) { router.push(`/connect?exchange=${selected}`); return; }
-    track('existing_account_notice_viewed', { ...P, exchange: selected });
-    setSheet('fresh');
-  };
-
-  const choose = (choice: 'new' | 'other_exchange' | 'leave' | 'explore') => {
-    track('existing_account_choice', { ...P, exchange: selected, choice });
-    if (choice === 'explore') router.push('/explore');
-    else if (choice === 'new') router.push(`/connect?exchange=${selected}&fresh=1`);
-    else if (choice === 'other_exchange') { setSelected(other.id); setSheet(null); }
-    else setSheet(null);
+    router.push(`/connect?exchange=${id}`);
   };
 
   const playVideo = () => {
@@ -124,49 +108,6 @@ export default function ChooseExchange() {
         <div className={s.spacer} aria-hidden />
       </div>
 
-      {sheet && (
-        <Sheet title={sheet === 'ask' || (eu && !otherOpen) ? `Your ${current.name} account` : 'You’ll need a fresh account'} onClose={() => (sheet === 'fresh' ? choose('leave') : setSheet(null))}>
-          {sheet === 'ask' ? (
-            <>
-              <div className={s.modalLogos} aria-hidden><span className={s.logoRing}><Image src={current.logo.src} alt="" width={current.logo.width} height={current.logo.height} /></span></div>
-              <h2 id="sheet-title" className={s.modalTitle}>Do you already have a {current.name} account?</h2>
-              <p className={`${s.text} ${s.center}`}>Only accounts opened through TradeX count for the leaderboard, so we need to know.</p>
-              <div className={s.optionList}>
-                <button type="button" className={s.option} onClick={() => answer(false)}><b>No, I’m new to {current.name}</b><span>We’ll guide you through opening one.</span></button>
-                <button type="button" className={s.option} onClick={() => answer(true)}><b>Yes, I already have one</b><span>We’ll show you what to do.</span></button>
-              </div>
-            </>
-          ) : (
-            <>
-              <h2 id="sheet-title" className={s.modalTitle}>The leaderboard only counts accounts opened through TradeX</h2>
-              <p className={`${s.text} ${s.center}`}>Your current {current.name} account stays exactly as it is. You can keep using it.</p>
-              {eu && !otherOpen ? (
-                <div className={s.optionList}>
-                  <button type="button" className={`${s.option} ${s.optionRecommended}`} onClick={() => choose('explore')}>
-                    <b>Explore TradeX first</b>
-                    <span>Courses and community are open to you. We’ll tell you when another exchange is available in the EU.</span>
-                  </button>
-                </div>
-              ) : (
-              <div className={s.optionList}>
-                <button type="button" className={`${s.option} ${s.optionRecommended}`} onClick={() => choose('other_exchange')}>
-                  <span className={s.optionBadge}>Recommended</span>
-                  <b>Pick {other.name} instead</b>
-                  <span>An exchange you don’t use yet. Nothing to change on your side.</span>
-                </button>
-                {!eu && (
-                  <button type="button" className={s.option} onClick={() => choose('new')}>
-                    <b>Open a new {current.name} account</b>
-                    <span>Use a different email address. Your ID can be the same: {current.name} runs the check. We show you every step.</span>
-                  </button>
-                )}
-              </div>
-              )}
-            </>
-          )}
-        </Sheet>
-      )}
-
       <HelpButton stepKey="exchange_choice">
         <h2>Which exchange should I pick?</h2>
         <p>{eu && !available('bitunix', eu) ? 'In the EU, you can open Pionex through TradeX. Bitunix isn’t available in the EU yet. We guide you through opening the account step by step.' : 'Most TradeX members use Bitunix. Pick Pionex if you want its free trading bots. Either way, we guide you through opening the account step by step.'}</p>
@@ -182,7 +123,7 @@ function ExchangeCard({ ex, eu, off, selected, badge, onSelect }: { ex: Exchange
   const tipId = `bonus-${ex.id}`;
   return (
     <button type="button" role="radio" aria-checked={selected} disabled={off} aria-describedby={eu && !off ? tipId : undefined} className={`${s.card} ${s.cardSelectable} ${selected ? s.cardSelected : ''} ${s.cardEx} ${ex.id === 'pionex' ? s.exPionex : s.exBitunix} ${off ? s.cardOff : ''}`} onClick={onSelect}>
-      {badge && <span className={s.badge}>{badge}</span>}
+      {badge && <Tag>{badge}</Tag>}
       <span className={s.cardBody}>
         <span className={s.cardHead}>
           <span className={s.cardBrand}>
@@ -208,31 +149,5 @@ function ExchangeCard({ ex, eu, off, selected, badge, onSelect }: { ex: Exchange
         ? <span className={s.cardOffNote}>Not available in the EU yet</span>
         : <span className={s.radioRow} aria-hidden><span className={s.radioDot} />{selected ? 'Selected' : `Choose ${ex.name}`}</span>}
     </button>
-  );
-}
-
-function Sheet({ title, onClose, children }: { title: string; onClose: () => void; children: React.ReactNode }) {
-  const closeRef = useRef<HTMLButtonElement>(null);
-  const onCloseRef = useRef(onClose);
-  onCloseRef.current = onClose;
-  useEffect(() => { closeRef.current?.focus(); }, [title]);
-  useEffect(() => {
-    const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') onCloseRef.current(); };
-    document.addEventListener('keydown', onKey);
-    return () => document.removeEventListener('keydown', onKey);
-  }, []);
-  return (
-    <div className={s.overlay} onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}>
-      <div className={s.modal} role="dialog" aria-modal="true" aria-labelledby="sheet-title">
-        <div className={s.modalNoise} />
-        <div className={s.modalTop}>
-          {title}
-          <button ref={closeRef} type="button" className={s.modalBack} onClick={onClose} aria-label="Back">
-            <Image src="/signup/arrow-left-small.svg" alt="" width={16} height={16} />
-          </button>
-        </div>
-        <div className={s.modalBody}>{children}</div>
-      </div>
-    </div>
   );
 }

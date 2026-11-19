@@ -166,14 +166,26 @@
 }
 .trialCardSoon { --t: 255, 196, 92; }
 .trialCardHead { display: flex; align-items: center; gap: 8px; }
-.trialCardIcon { width: 28px; height: 28px; display: grid; place-items: center; border-radius: 50%; background: rgba(var(--t), 0.2); }
+.trialCardIcon { width: 24px; height: 24px; display: grid; place-items: center; border-radius: 50%; background: rgba(var(--t), 0.2); }
+.trialCardCount { font-size: 15px; font-weight: 500; }
+.trialCardDay { margin-left: auto; font-size: 12px; color: rgba(255, 255, 255, 0.55); }
+/* What the person is missing now: this month's prize pools */
+.trialMiss { display: flex; flex-direction: column; gap: 0; padding: 8px 10px; border-radius: 8px; background: rgba(3, 6, 10, 0.45); }
+.trialMiss b { font-size: 20px; font-weight: 600; line-height: 1.2; color: rgb(var(--t)); }
+.trialMiss span { font-size: 12px; line-height: 1.4; color: rgba(255, 255, 255, 0.7); }
+/* What pauses after day 7 */
+.trialLose { display: flex; flex-direction: column; gap: 4px; }
+.trialLoseLabel { font-size: 12px; font-weight: 500; color: rgba(255, 255, 255, 0.55); }
+.trialLose ul { margin: 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: 2px; }
+.trialLose li { display: flex; align-items: center; gap: 8px; font-size: 13px; color: rgba(255, 255, 255, 0.85); }
+.trialLose li img { opacity: 0.7; }
 .trialCardKicker { font-size: 13px; font-weight: 600; }
 .trialSegs { display: grid; grid-template-columns: repeat(7, 1fr); gap: 3px; }
 .trialSegs span { height: 4px; border-radius: 2px; background: rgba(255, 255, 255, 0.14); }
 .trialSegs .trialSegOn { background: rgb(var(--t)); }
 .trialCardTitle { margin: 2px 0 0; font-size: 14px; font-weight: 600; line-height: 1.35; text-wrap: balance; }
 .trialCardText { margin: 0; font-size: 13px; line-height: 1.45; color: rgba(255, 255, 255, 0.7); text-wrap: pretty; }
-.trialCardBtn { height: 36px; margin-top: 4px; border: 0; border-radius: 8px; background: #fff; color: #000; font: inherit; font-size: 14px; font-weight: 500; cursor: pointer; }
+.trialCardBtn { align-self: stretch; height: 32px; margin-top: 2px; padding: 0 12px; border: 0; border-radius: 8px; background: #fff; color: #000; font: inherit; font-size: 13px; font-weight: 500; cursor: pointer; }
 .trialCardBtn:hover { background: rgba(255, 255, 255, 0.9); }
 .mobileOnly { display: none; }
 @media (max-width: 1023px) { .mobileOnly { display: flex; } }

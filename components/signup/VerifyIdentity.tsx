@@ -4,14 +4,15 @@
  * Flow A · A-12 · Step 3/5 · Verify your identity (KYC).
  * Canvas requirements: plain explanation of KYC and why it's safe; annotated screenshots of the KYC flow per
  * exchange; time estimate plus "Pending is fine, continue"; common problems (photo rejected, wrong document)
- * with fixes. Events: connect_step_viewed {3: kyc}, kyc_help_opened {problem}.
+ * with fixes (Nov 19, 2026: in the Help drawer, opened from a link under the steps, so the CTA stays alone at the bottom).
+ * Events: connect_step_viewed {3: kyc}, connect_substep_checked {item}, connect_help_faq_opened {question}.
  * Prints: Bitunix and Pionex identity verification pages (English, Nov 2026), cropped with some of the page around them.
  */
 import Image from 'next/image';
 import { useEffect, useRef, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { StepHeader, PrimaryButton, Callout, Lines, Shot, styles as s } from './parts';
-import HelpDrawer from './HelpDrawer';
+import { StepHeader, PrimaryButton, Lines, Shot, ConnectCta, styles as s } from './parts';
+import HelpDrawer, { OPEN_HELP } from './HelpDrawer';
 import { exchangeById, type ExchangeId, type Print } from '@/lib/exchanges';
 import { track } from '@/lib/track';
 
@@ -33,19 +34,10 @@ const STEPS: Record<ExchangeId, KycStep[]> = {
   ]
 };
 
-const PROBLEMS = (ex: ExchangeId, name: string): { key: string; q: string; a: string }[] => [
-  { key: 'photo_rejected', q: 'My photo was rejected', a: 'Take it again in good light, with all four corners of the ID in the frame and no glare or fingers on it.' },
-  { key: 'wrong_document', q: 'It says my document is wrong', a: 'Use a valid ID card or passport, and pick the country that issued it, not the one you live in.' },
-  { key: 'face_check', q: 'The face check failed', a: 'Look straight at the camera, remove glasses or a hat, and make sure your face is well lit.' },
-  // Bitunix states on its verification page that one identity can verify only one account. Not confirmed for Pionex.
-  ...(ex === 'bitunix' ? [{ key: 'identity_used', q: `My ID is already verified on another ${name} account`, a: `${name} verifies one account per identity. Contact TradeX support before you continue, so we can help you with the next step.` }] : [])
-];
-
 export default function VerifyIdentity() {
   const router = useRouter();
   const params = useSearchParams();
   const ex = exchangeById(params.get('exchange')) ?? exchangeById('bitunix')!;
-  const [open, setOpen] = useState<number | null>(null);
   const [done, setDone] = useState<Record<number, boolean>>({});
   const viewed = useRef(false);
   const P = { step_number: 3, step_name: 'kyc', exchange: ex.id };
@@ -56,7 +48,6 @@ export default function VerifyIdentity() {
     track('connect_step_viewed', P);
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
-  const problems = PROBLEMS(ex.id, ex.name);
   const steps = STEPS[ex.id];
   const tick = (i: number) => {
     setDone((d) => {
@@ -65,27 +56,17 @@ export default function VerifyIdentity() {
       return next;
     });
   };
-  const toggle = (i: number) => {
-    if (open !== i) track('kyc_help_opened', { ...P, problem: problems[i].key });
-    setOpen(open === i ? null : i);
-  };
 
   return (
-    <main className={s.centerPage}>
-      <div className={s.mountains} aria-hidden><div className={s.noise} /></div>
-      <div className={s.grid} aria-hidden />
-
+    <>
       <div className={s.centerMain}>
         <StepHeader step={3} total={CONNECT_STEPS} onBack={() => router.push(`/connect/signup?exchange=${ex.id}`)} />
 
-        <div className={`${s.centerContent} ${s.stepsPage}`}>
-          <div className={`${s.stepsHeader} ${s.stepsHeaderWide}`}>
-            <div className={s.intro}>
-              <p className={s.timeBadge}><Image src="/signup/icons/timer.svg" alt="" width={16} height={16} />Usually a few minutes</p>
-              <h1 className={s.title}>Verify your identity</h1>
-              <p className={s.lead}><Lines text={`Exchanges must check who their users are. ${ex.name} does it with your ID and a quick face check.`} /></p>
-            </div>
-            <Callout title="Your documents stay with the exchange">{`You send them to ${ex.name}, not to TradeX. TradeX never sees your ID. If ${ex.name} says your check is being reviewed, you can continue.`}</Callout>
+        <div className={`${s.connectBody} ${s.connectWide}`}>
+          <div className={s.connectIntro}>
+            <h1 className={s.title}>Verify your identity</h1>
+            <p className={s.lead}><Lines text={`Exchanges must check who their users are. ${ex.name} does it with your ID and a quick face check, usually in a few minutes.`} /></p>
+            <p className={s.safetyLine}><Image src="/signup/check.svg" alt="" width={14} height={14} />Your documents go to {ex.name}. TradeX never sees your ID.</p>
           </div>
 
           <ol className={`${s.subSteps} ${s.stepCols}`} style={{ '--cols': steps.length } as React.CSSProperties}>
@@ -109,32 +90,15 @@ export default function VerifyIdentity() {
             ))}
           </ol>
 
-          <div className={`${s.stepsFooter} ${s.stepsFooterTop}`}>
-            <section className={`${s.faq} ${s.faqCard}`} aria-labelledby="problems-title">
-              <h2 id="problems-title" className={s.faqCardTitle}>Common problems</h2>
-              <div className={s.faqCardItems}>
-                {problems.map((p, i) => (
-                  <div key={p.key} className={s.faqItem}>
-                    <button type="button" className={s.faqQ} aria-expanded={open === i} aria-controls={`kyc-${i}`} onClick={() => toggle(i)}>
-                      {p.q}<span aria-hidden className={s.faqIcon}>{open === i ? '−' : '+'}</span>
-                    </button>
-                    {open === i && <p id={`kyc-${i}`} className={s.faqA}>{p.a}</p>}
-                  </div>
-                ))}
-              </div>
-            </section>
-
-            <div className={s.choiceActions}>
-              <PrimaryButton onClick={() => router.push(`/connect/uid?exchange=${ex.id}`)}>Continue</PrimaryButton>
-              <p className={s.hint}>Next: find your UID.</p>
-            </div>
-          </div>
+          <button type="button" className={s.linkButton} onClick={() => window.dispatchEvent(new Event(OPEN_HELP))}>Photo rejected or face check failed? See common problems</button>
         </div>
-
-        <div className={s.spacer} aria-hidden />
       </div>
 
+      <ConnectCta note={<Lines text={`Pending is fine: if ${ex.name} is still reviewing, continue. Your UID is ready already.`} />}>
+        <PrimaryButton onClick={() => router.push(`/connect/uid?exchange=${ex.id}`)}>Continue</PrimaryButton>
+      </ConnectCta>
+
       <HelpDrawer step="connect_kyc" exchange={ex.name} exchangeId={ex.id} />
-    </main>
+    </>
   );
 }

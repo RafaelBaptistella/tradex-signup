@@ -2,18 +2,17 @@
 
 /**
  * Flow A · A-15 · Verify affiliate attribution (system step, shown as a live status screen).
- * Canvas requirements: "Checking…" status with the expected time; email when verified if it takes longer.
+ * Canvas requirements: "Checking…" status with the expected time. Nov 19, 2026: no "Email me when it’s done", it just loads.
  * Then A-16 decides: verified → A-17 Connected, not verified → A-19 Didn't work.
  * Event: exchange_verification_result {ok | pending | failed}.
  */
 import Image from 'next/image';
 import { useEffect, useRef, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { PrimaryButton, HelpButton, Lines, styles as s } from './parts';
+import { HelpButton, Lines, styles as s } from './parts';
 import { exchangeById } from '@/lib/exchanges';
 import { track } from '@/lib/track';
 import { checkAttribution } from '@/lib/mockApi';
-import { VERIFIED_KEY } from './VerifyEmail';
 
 type Row = { label: string; state: 'done' | 'active' | 'waiting' };
 
@@ -22,15 +21,13 @@ export default function Checking() {
   const params = useSearchParams();
   const ex = exchangeById(params.get('exchange')) ?? exchangeById('bitunix')!;
   const [phase, setPhase] = useState<'checking' | 'linking'>('checking');
-  const [emailMe, setEmailMe] = useState(false);
-  const [email, setEmail] = useState('');
   const started = useRef(false);
 
   useEffect(() => {
     if (started.current) return;
     started.current = true;
     let uid = '';
-    try { uid = sessionStorage.getItem('tx_uid') || ''; setEmail(sessionStorage.getItem(VERIFIED_KEY) || ''); } catch { /* demo continues */ }
+    try { uid = sessionStorage.getItem('tx_uid') || ''; } catch { /* demo continues */ }
     const t = window.setTimeout(() => setPhase('linking'), 1800);
     checkAttribution(uid).then((r) => {
       window.clearTimeout(t);
@@ -45,20 +42,12 @@ export default function Checking() {
     { label: 'Linking it to your TradeX account', state: phase === 'linking' ? 'active' : 'waiting' }
   ];
 
-  const askEmail = () => {
-    track('exchange_verification_result', { exchange: ex.id, result: 'pending', email_requested: true });
-    setEmailMe(true);
-  };
-
   return (
-    <main className={`${s.centerPage} ${s.exAccent} ${ex.id === 'pionex' ? s.exPionex : s.exBitunix}`}>
-      <div className={s.mountains} aria-hidden><div className={s.noise} /></div>
-      <div className={s.grid} aria-hidden />
-
+    <>
       <div className={s.centerMain}>
         <div aria-hidden />
-        <div className={`${s.centerContent} ${s.medium}`}>
-          <div className={s.centerIntro}>
+        <div className={`${s.connectBody} ${s.connectNarrow} ${s.connectMiddle}`}>
+          <div className={s.connectIntro}>
             <span className={s.spinnerLarge} aria-hidden />
             <h1 className={s.title} aria-live="polite">Checking your {ex.name} account</h1>
             <p className={s.text}><Lines text="This usually takes a moment. Keep this page open." /></p>
@@ -75,21 +64,13 @@ export default function Checking() {
               </li>
             ))}
           </ol>
-
-          <div className={s.choiceActions}>
-            {emailMe
-              ? <p className={`${s.hint} ${s.hintOk}`} role="status">{email ? `We’ll email ${email} as soon as it’s done.` : 'We’ll email you as soon as it’s done.'}</p>
-              : <PrimaryButton onClick={askEmail}>Email me when it’s done</PrimaryButton>}
-            <p className={s.hint}>You can close this page. Your progress is saved.</p>
-          </div>
         </div>
-        <div className={s.spacer} aria-hidden />
       </div>
 
       <HelpButton stepKey="connect_checking">
         <h2>Taking long?</h2>
-        <p>{ex.name} confirms new accounts to TradeX. Sometimes it takes a few minutes. We email you when it’s done, and you can pick up from there.</p>
+        <p>{ex.name} confirms new accounts to TradeX. Sometimes it takes a few minutes. Keep this page open and it moves on by itself.</p>
       </HelpButton>
-    </main>
+    </>
   );
 }

@@ -101,14 +101,14 @@ export default function TrialDayModal({ day, start, onConnect, onItem, onClose }
       primary={{ label: c.primary, onClick: (ex) => run(c.action, ex) }}
       secondary={c.secondary && { label: c.secondary.label, onClick: () => run(c.secondary!.action) }}
       onClose={onClose}
-    >
-      {day === 1 && start !== null && (
-        <ol className={`${p.timeline} ${p.timelineList}`} aria-label="Your 7 days">
-          <li><b>Today</b>{fmt(new Date(start))} · Explore the free half</li>
-          <li><b>Day {TRIAL_DAYS}</b>{fmt(new Date(start + (TRIAL_DAYS - 1) * DAY_MS))} · Last free day</li>
-          <li><b>Day {TRIAL_DAYS + 1}</b>{fmt(new Date(start + TRIAL_DAYS * DAY_MS))} · Pauses until you connect</li>
+      aside={day === 1 && start !== null ? (
+        // C-03: the 7 days as a stepper, read left to right at a glance.
+        <ol className={p.stepper} aria-label="Your 7 days">
+          <li className={p.stepNow}><span className={p.stepDot} aria-hidden /><b>Today</b>Explore the free half<span className={p.stepDate}>{fmt(new Date(start))}</span></li>
+          <li><span className={p.stepDot} aria-hidden /><b>Day {TRIAL_DAYS}</b>Last free day<span className={p.stepDate}>{fmt(new Date(start + (TRIAL_DAYS - 1) * DAY_MS))}</span></li>
+          <li className={p.stepEnd}><span className={p.stepDot} aria-hidden /><b>Day {TRIAL_DAYS + 1}</b>Pauses until you connect<span className={p.stepDate}>{fmt(new Date(start + TRIAL_DAYS * DAY_MS))}</span></li>
         </ol>
-      )}
-    </Paywall>
+      ) : undefined}
+    />
   );
 }

@@ -19,7 +19,6 @@ export const STEPS: Record<StepKey, { number: number; node: string; path: string
 
 /** Screens not built yet, in flow order, so the prototype can still be clicked through. */
 export const PLACEHOLDERS: Record<string, { node: string; title: string; step?: number; next: string }> = {
-  explore:        { node: 'A-06 → Explore first', title: 'Where “Explore first” leads: to decide', next: '/exchange' },
 };
 
 export const BRANDS = ['tim', 'markus', 'lucas'] as const;

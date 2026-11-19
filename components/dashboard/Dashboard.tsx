@@ -14,22 +14,27 @@
 import Image from 'next/image';
 import { useCallback, useEffect, useLayoutEffect, useRef, useState, type ReactNode } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { connectPath, exchangeById, type ExchangeId } from '@/lib/exchanges';
+import { EXCHANGES, connectPath, exchangeById, type ExchangeId } from '@/lib/exchanges';
 import { track } from '@/lib/track';
 import { available, openNames, useEU } from '@/lib/compliance';
-import LockedFeatureSheet, { type LockedFeature } from './LockedFeatureSheet';
+import LockedFeatureSheet, { LOCKED_FEATURES, type LockedFeature } from './LockedFeatureSheet';
 import TrialDayModal, { DAYS, DAY_MODAL_KEY } from './TrialDayModal';
 import d from './dashboard.module.css';
 
-const NAV: { icon: string; label: string; active?: boolean; lockedInB?: string }[] = [
+/**
+ * Which feature sheet a locked item opens, per flow. lockB: flow B, a soft lock (Nov 19, 2026): only the dashboard,
+ * Ranks & Rewards and Courses stay open. lockC: flow C during the trial (half open; ranks and leaderboards locked).
+ */
+type Lock = { lockB?: LockedFeature; lockC?: LockedFeature };
+const NAV: ({ icon: string; label: string; active?: boolean } & Lock)[] = [
   { icon: 'dashboard', label: 'Dashboard', active: true },
-  { icon: 'ranks', label: 'Ranks & Rewards', lockedInB: 'ranking' },
+  { icon: 'ranks', label: 'Ranks & Rewards', lockC: 'ranking' },
   { icon: 'courses', label: 'Courses' },
-  { icon: 'journal', label: 'Trading Journal' },
-  { icon: 'events', label: 'Events' },
-  { icon: 'community', label: 'Community' },
-  { icon: 'leaderboards', label: 'Leaderboards', lockedInB: 'ranking' },
-  { icon: 'partners', label: 'Partnerships' }
+  { icon: 'journal', label: 'Trading Journal', lockB: 'journal' },
+  { icon: 'events', label: 'Events', lockB: 'events' },
+  { icon: 'community', label: 'Community', lockB: 'community' },
+  { icon: 'leaderboards', label: 'Leaderboards', lockB: 'ranking', lockC: 'ranking' },
+  { icon: 'partners', label: 'Partnerships', lockB: 'partners' }
 ];
 const NAV_BOTTOM = [{ icon: 'settings', label: 'Settings' }, { icon: 'feedback', label: 'Feedback' }, { icon: 'logout', label: 'Log out' }];
 
@@ -44,11 +49,11 @@ const UNLOCKABLES: Unlockable[] = [
   { label: 'Onboarding campaign', state: 'locked' as const }
 ];
 
-const TILES: { img: string; title: string; link: string; lockedInB?: string }[] = [
+const TILES: ({ img: string; title: string; link: string } & Lock)[] = [
   { img: '/dashboard/tile-0.jpg', title: 'Courses', link: 'Go to courses' },
-  { img: '/dashboard/tile-1.jpg', title: 'Leaderboard', link: 'Go to leaderboard', lockedInB: 'ranking' },
-  { img: '/dashboard/tile-2.jpg', title: 'Analyses', link: 'Go to analyses' },
-  { img: '/dashboard/tile-3.jpg', title: 'Community', link: 'Go to Discord' }
+  { img: '/dashboard/tile-1.jpg', title: 'Leaderboard', link: 'Go to leaderboard', lockB: 'ranking', lockC: 'ranking' },
+  { img: '/dashboard/tile-2.jpg', title: 'Analyses', link: 'Go to analyses', lockB: 'analyses' },
+  { img: '/dashboard/tile-3.jpg', title: 'Community', link: 'Go to Discord', lockB: 'community' }
 ];
 
 type TourStep = { target: string; title: string; text: string };
@@ -56,6 +61,12 @@ type ChecklistKey = 'first_course' | 'join_discord' | 'first_trade' | 'read_anal
 const CHECK_KEY = 'tx_checklist';
 /** Flow C: what the person has tried during the trial (C-04 progress panel). */
 const TRIAL_USED_KEY = 'tx_trial_used';
+/** C sidebar card: what pauses after day 7 (the free half of the trial). */
+const TRIAL_LOSES = [
+  { icon: 'courses', text: 'Courses 1 and 2' },
+  { icon: 'community', text: 'Community' },
+  { icon: 'journal', text: 'Analyses and journal' }
+];
 const DAY_MS = 86400000;
 
 /**
@@ -82,7 +93,7 @@ export default function Dashboard({ mode = 'a', overlay, entry, ended }: {
   /** B-06: monthly rewards first, ranking locked until an exchange is connected. */
   const unlockables: Unlockable[] = justUnlocked ? [{ label: 'Monthly rewards', state: 'open' }, ...(mode === 'c-unlocked' ? [UNLOCKABLES[0], UNLOCKABLES[1], { label: 'Advanced courses', state: 'open' as const }, UNLOCKABLES[2]] : UNLOCKABLES)] : connected ? UNLOCKABLES : [
     { label: 'Monthly rewards', state: 'locked', feature: 'cashback' },
-    UNLOCKABLES[0], UNLOCKABLES[1],
+    UNLOCKABLES[0], mode === 'b' ? { label: 'Community', state: 'locked', feature: 'community' } : UNLOCKABLES[1],
     { label: 'Leaderboard', state: 'locked', feature: 'ranking' },
     // C-04: advanced courses are locked during the trial too (C-03 lists them under “Unlocks with an exchange”).
     mode === 'c' ? { label: 'Advanced courses', state: 'locked', feature: 'courses' } : UNLOCKABLES[3]
@@ -93,6 +104,7 @@ export default function Dashboard({ mode = 'a', overlay, entry, ended }: {
   };
   /** B-07: a locked item opens a sheet about that feature, with the connect button. */
   const [sheet, setSheet] = useState<LockedFeature | null>(null);
+  const lockOf = (x: Lock) => (connected ? undefined : mode === 'b' ? x.lockB : x.lockC);
   const locked = (feature: string) => {
     track('locked_feature_clicked', { feature, ...(trial ? { trial_day: trialDay } : {}) });
     setSheet(feature as LockedFeature);
@@ -123,7 +135,7 @@ export default function Dashboard({ mode = 'a', overlay, entry, ended }: {
     }
     const k = params.get('sheet');
     if (connected) return;
-    setSheet(k === 'cashback' || k === 'ranking' || (k === 'courses' && trial) ? k : null);
+    setSheet(k && (LOCKED_FEATURES as readonly string[]).includes(k) && (k !== 'courses' || trial) ? (k as LockedFeature) : null);
   }, [params]); // eslint-disable-line react-hooks/exhaustive-deps
   const nudged = useRef<number | null>(null);
   useEffect(() => {
@@ -154,6 +166,8 @@ export default function Dashboard({ mode = 'a', overlay, entry, ended }: {
     try { sessionStorage.setItem(DAY_MODAL_KEY + dayModal, '1'); } catch { /* shows again on reload */ }
     setDayModal(null);
   };
+  /** C sidebar card: the prize pools of the exchanges the person can open (both, unless one is off in the EU). */
+  const prizePools = '$' + EXCHANGES.filter((x) => available(x.id, eu)).reduce((sum, x) => sum + Number(x.pool.replace(/\D/g, '')), 0).toLocaleString('en-US');
   const ex = exchangeById(params.get('exchange')) ?? exchangeById(available('bitunix', eu) ? 'bitunix' : 'pionex')!;
   const [name, setName] = useState('');
   const [tourStep, setTourStep] = useState<number | null>(firstTour ? 0 : null);
@@ -253,9 +267,9 @@ export default function Dashboard({ mode = 'a', overlay, entry, ended }: {
           <nav className={d.nav} aria-label="Main">
             {NAV.map((n) => (
               <a key={n.label} href="#" className={`${d.navItem} ${n.active ? d.navActive : ''}`} aria-current={n.active ? 'page' : undefined}
-                onClick={(e) => { e.preventDefault(); if (!connected && n.lockedInB) locked(n.lockedInB); }}>
+                onClick={(e) => { e.preventDefault(); const k = lockOf(n); if (k) locked(k); }}>
                 <Image src={`/dashboard/icons/${n.icon}.svg`} alt="" width={20} height={20} />{n.label}
-                {!connected && n.lockedInB && <span className={d.navLock} aria-label="Locked"><Image src="/dashboard/icons/lock.svg" alt="" width={12} height={12} /></span>}
+                {lockOf(n) && <span className={d.navLock} aria-label="Locked"><Image src="/dashboard/icons/lock.svg" alt="" width={12} height={12} /></span>}
               </a>
             ))}
           </nav>
@@ -264,15 +278,24 @@ export default function Dashboard({ mode = 'a', overlay, entry, ended }: {
           {(trial || ended) && (
             <section className={`${d.trialCard} ${ended || nudge?.soon || daysLeft <= 2 ? d.trialCardSoon : ''}`} aria-labelledby="trial-card-title">
               <div className={d.trialCardHead}>
-                <span className={d.trialCardIcon} aria-hidden><Image src="/signup/icons/timer.svg" alt="" width={16} height={16} /></span>
-                <span className={d.trialCardKicker}>{ended ? 'Free trial ended' : `Free trial · day ${trialDay} of 7`}</span>
+                <span className={d.trialCardIcon} aria-hidden><Image src="/signup/icons/timer.svg" alt="" width={14} height={14} /></span>
+                <b id="trial-card-title" className={d.trialCardCount}>{ended ? 'Trial ended' : daysLeft === 1 ? 'Last day' : `${daysLeft} days left`}</b>
+                {!ended && <span className={d.trialCardDay}>Day {trialDay}/7</span>}
               </div>
               <div className={d.trialSegs} aria-hidden>
                 {Array.from({ length: 7 }, (_, i) => <span key={i} className={ended || i < trialDay ? d.trialSegOn : ''} />)}
               </div>
-              <p id="trial-card-title" className={d.trialCardTitle}>{ended ? 'Your free trial has ended' : trialCopy.title}</p>
-              <p className={d.trialCardText}>{ended ? 'Connect an exchange to open TradeX again.' : trialCopy.text}</p>
-              <button type="button" className={d.trialCardBtn} onClick={() => connectFrom(nudge ? 'trial_nudge' : 'trial_sidebar')}>Connect exchange</button>
+              <div className={d.trialMiss}>
+                <b>{prizePools}</b>
+                <span>in prize pools this month. You’re not in yet.</span>
+              </div>
+              <div className={d.trialLose}>
+                <span className={d.trialLoseLabel}>{ended ? 'Paused now' : daysLeft === 1 ? 'Pauses tomorrow' : 'Pauses after day 7'}</span>
+                <ul>
+                  {TRIAL_LOSES.map((l) => <li key={l.text}><Image src={`/dashboard/icons/${l.icon}.svg`} alt="" width={14} height={14} />{l.text}</li>)}
+                </ul>
+              </div>
+              <button type="button" className={d.trialCardBtn} onClick={() => connectFrom(nudge ? 'trial_nudge' : 'trial_sidebar')}>Connect to keep it</button>
             </section>
           )}
           <nav className={d.nav} aria-label="Account">
@@ -317,7 +340,7 @@ export default function Dashboard({ mode = 'a', overlay, entry, ended }: {
         {!connected && !trial && (
           <div className={d.banner} role="region" aria-label="Connect your exchange">
             <span className={d.bannerIcon} aria-hidden><Image src="/dashboard/icons/lock.svg" alt="" width={16} height={16} /></span>
-            <p><b>Connect to join the leaderboard</b><span>{`Open ${openNames(eu)} through TradeX to unlock the leaderboard and your ranks.`}</span></p>
+            <p><b>Connect to open all of TradeX</b><span>{`Open ${openNames(eu)} through TradeX to unlock the community, events, the leaderboard and more.`}</span></p>
             <button type="button" onClick={() => connectFrom('banner')}>Connect exchange</button>
           </div>
         )}
@@ -338,7 +361,7 @@ export default function Dashboard({ mode = 'a', overlay, entry, ended }: {
           <div className={d.heroImg} aria-hidden />
           <div className={d.heroRank}>
             <span className={d.badge}><Image src="/signup/rank/gem-rekrut.png" alt="" width={65} height={65} /></span>
-            {!connected && <button type="button" className={d.heroLock} onClick={() => locked('ranking')}><Image src="/dashboard/icons/lock.svg" alt="" width={12} height={12} />Ranking locked</button>}
+            {!connected && mode !== 'b' && <button type="button" className={d.heroLock} onClick={() => locked('ranking')}><Image src="/dashboard/icons/lock.svg" alt="" width={12} height={12} />Ranking locked</button>}
             <div className={d.rankInfo}>
               <div className={d.rankRow}>
                 <div>
@@ -372,9 +395,9 @@ export default function Dashboard({ mode = 'a', overlay, entry, ended }: {
 
         <section className={d.tiles} data-tour="tiles" aria-label="Explore">
           {TILES.map((t) => (
-            <a key={t.title} href="#" className={d.tile} onClick={(e) => { e.preventDefault(); if (!connected && t.lockedInB) locked(t.lockedInB); }}>
+            <a key={t.title} href="#" className={d.tile} onClick={(e) => { e.preventDefault(); const k = lockOf(t); if (k) locked(k); }}>
               <span className={d.tileImg} style={{ backgroundImage: `url(${t.img})` }} aria-hidden />
-              {!connected && t.lockedInB && <span className={d.tileLock}><Image src="/dashboard/icons/lock.svg" alt="" width={12} height={12} />Locked</span>}
+              {lockOf(t) && <span className={d.tileLock}><Image src="/dashboard/icons/lock.svg" alt="" width={12} height={12} />Locked</span>}
               <span className={d.tileText}><b>{t.title}</b><span>{t.link} →</span></span>
             </a>
           ))}

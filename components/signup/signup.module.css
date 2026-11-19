@@ -681,12 +681,12 @@
 .bonusHint { text-decoration: underline dotted rgba(255, 255, 255, 0.35); text-underline-offset: 4px; }
 .bonusTip {
   position: absolute; left: 8px; right: 8px; bottom: calc(100% + 8px); z-index: 20; display: flex; flex-direction: column; gap: 4px;
-  padding: 16px; border-radius: var(--tx-radius); border: 1px solid rgba(var(--ex-rgb), 0.35); background: rgba(10, 13, 18, 0.97);
-  box-shadow: 0 16px 48px rgba(0, 0, 0, 0.5); font-size: 15px; line-height: 1.5; color: var(--tx-fg-soft); text-align: left;
+  padding: 16px; border-radius: var(--tx-radius); border: 0; border-top: 3px solid var(--ex); background: #fff;
+  box-shadow: 0 16px 48px rgba(0, 0, 0, 0.5); font-size: 15px; line-height: 1.5; color: rgba(10, 13, 18, 0.75); text-align: left;
   opacity: 0; visibility: hidden; transform: translateY(4px); transition: opacity 0.15s, transform 0.15s, visibility 0.15s; pointer-events: none;
 }
-.bonusTipTitle { margin-bottom: 4px; font-size: 16px; font-weight: 500; color: var(--tx-fg); }
-.bonusTipNote { margin-top: 4px; font-size: 13px; color: var(--tx-fg-muted); }
+.bonusTipTitle { margin-bottom: 4px; font-size: 16px; font-weight: 600; color: #0a0d12; }
+.bonusTipNote { margin-top: 4px; font-size: 13px; color: rgba(10, 13, 18, 0.55); }
 @media (hover: hover) {
   .cardEx:hover .bonusTip, .cardEx:focus-visible .bonusTip { opacity: 1; visibility: visible; transform: none; }
 }
@@ -736,4 +736,103 @@
   .stepCols { grid-template-columns: 1fr; }
   .stepShot .previewImg { width: 100%; }
   .stepShot .previewImg img { width: 100%; max-height: none; }
+}
+
+/* =====================================================================
+   Connect flow (A-09 to A-15, A-19), Nov 19, 2026: one frame, centred content, the CTA fixed at the bottom centre.
+   ===================================================================== */
+@keyframes connectIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+.connectFrame .centerMain { justify-content: flex-start; padding-bottom: 0; }
+.connectBody {
+  flex: 1; display: flex; flex-direction: column; align-items: center; gap: 24px;
+  width: min(var(--w, 880px), calc(100vw - 96px)); align-self: center; padding: 16px 0 184px;
+  animation: connectIn 0.24s ease-out both;
+}
+.connectWide { --w: 1120px; gap: 20px; }
+.connectWide .stepShot .previewImg img { max-height: 200px; }
+.connectNarrow { --w: 640px; }
+.connectIntro { display: flex; flex-direction: column; align-items: center; gap: 8px; text-align: center; max-width: 680px; }
+.connectIntro .title { margin: 0; }
+/* Exchange colour on the progress bar and the small accents */
+.exAccent .segmentOn { background: var(--ex); opacity: 1; }
+.exAccent .segmentDone { background: var(--ex); opacity: 0.5; }
+.exAccent .iconTile { background: rgba(var(--ex-rgb), 0.12); border-color: rgba(var(--ex-rgb), 0.3); }
+.exAccent .timeBadge { background: rgba(var(--ex-rgb), 0.14); color: var(--ex); }
+.exAccent .subStepDone { border-color: rgba(var(--ex-rgb), 0.55); }
+.exAccent .checkRow input { accent-color: var(--ex); }
+.exPill {
+  display: inline-flex; align-items: center; gap: 8px; height: 32px; margin: 0 0 4px; padding: 0 14px 0 5px; border-radius: 99px;
+  background: rgba(var(--ex-rgb), 0.12); border: 1px solid rgba(var(--ex-rgb), 0.35); color: var(--ex); font-size: 14px; font-weight: 500;
+}
+.exPillLogo { width: 24px; height: 24px; border-radius: 50%; display: grid; place-items: center; background: rgba(0, 0, 0, 0.45); }
+.exPillLogo img { width: 14px; height: auto; }
+/* Fixed CTA bar */
+.connectCta {
+  position: fixed; left: 8px; right: 8px; bottom: 8px; z-index: 4; display: flex; justify-content: center; padding: 48px 24px 24px;
+  border-radius: 0 0 var(--tx-radius-panel) var(--tx-radius-panel); pointer-events: none;
+  background: linear-gradient(to top, rgba(4, 7, 14, 0.92) 0%, rgba(4, 7, 14, 0.75) 55%, rgba(4, 7, 14, 0) 100%);
+}
+.connectCtaInner { pointer-events: auto; width: min(400px, 100%); display: flex; flex-direction: column; align-items: center; gap: 8px; }
+.connectCtaNote { min-height: 48px; display: flex; flex-direction: column; align-items: center; gap: 4px; text-align: center; font-size: 14px; line-height: 1.5; color: var(--tx-fg-muted); }
+.connectCtaNote .inlineLink { font-size: 14px; color: var(--tx-fg-soft); text-decoration: underline; text-underline-offset: 3px; }
+/* A-09: three needs in a row, the five steps as a strip */
+.needGrid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; width: 100%; margin: 0; padding: 0; list-style: none; }
+.needGrid li { display: flex; flex-direction: column; align-items: center; gap: 12px; padding: 20px 16px; text-align: center; }
+.stepStrip { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 8px; width: 100%; margin: 0; padding: 20px 16px; list-style: none; counter-reset: strip; }
+.stepStrip li { display: flex; flex-direction: column; align-items: center; gap: 8px; text-align: center; font-size: 14px; line-height: 1.4; color: var(--tx-fg-muted); }
+.stepStrip li::before {
+  counter-increment: strip; content: counter(strip); width: 28px; height: 28px; border-radius: 50%; display: grid; place-items: center;
+  border: 1px solid rgba(255, 255, 255, 0.18); font-size: 13px; color: var(--tx-fg-soft);
+}
+.stepStrip li:first-child { color: var(--tx-fg); }
+.stepStrip li:first-child::before { border-color: var(--ex); background: rgba(var(--ex-rgb), 0.18); color: var(--ex); }
+.blockLabel { align-self: stretch; margin: 0 0 -16px; font-size: 13px; font-weight: 500; letter-spacing: 0.04em; text-transform: uppercase; color: var(--tx-fg-muted); text-align: center; }
+/* Two blocks side by side, centred (A-10, A-13) */
+.connectSplit { display: grid; grid-template-columns: minmax(0, 5fr) minmax(0, 6fr); gap: 16px; width: 100%; align-items: center; }
+.connectSplit > * { min-width: 0; }
+.safetyLine { display: inline-flex; align-items: center; gap: 8px; margin: 4px 0 0; padding: 6px 14px; border-radius: 99px; background: rgba(116, 211, 251, 0.08); border: 1px solid rgba(116, 211, 251, 0.25); font-size: 14px; color: var(--tx-fg-soft); }
+.linkButton { padding: 0; border: 0; background: none; color: var(--tx-fg-soft); font: inherit; font-size: 15px; text-decoration: underline; text-underline-offset: 3px; cursor: pointer; }
+/* A-14: the UID field is the hero */
+.uidHero { width: min(560px, 100%); display: flex; flex-direction: column; align-items: center; gap: 10px; margin-top: 8px; }
+.uidHeroLabel { font-size: 15px; font-weight: 500; color: var(--tx-fg-soft); }
+.uidHeroWrap { position: relative; width: 100%; }
+.uidHeroInput {
+  width: 100%; box-sizing: border-box; height: 84px; padding: 0 120px; border-radius: 16px; border: 2px solid rgba(var(--ex-rgb), 0.55);
+  background: rgba(3, 6, 10, 0.7); color: var(--tx-fg); font: inherit; font-size: 34px; font-weight: 500; letter-spacing: 0.08em; text-align: center;
+  font-variant-numeric: tabular-nums; outline: none; box-shadow: 0 0 0 6px rgba(var(--ex-rgb), 0.1), 0 24px 64px rgba(0, 0, 0, 0.4);
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+.uidHeroInput::placeholder { color: rgba(255, 255, 255, 0.22); }
+.uidHeroInput:focus { border-color: var(--ex); box-shadow: 0 0 0 6px rgba(var(--ex-rgb), 0.22), 0 24px 64px rgba(0, 0, 0, 0.4); }
+.uidHeroInput.uidHeroError { border-color: #ff6b6b; box-shadow: 0 0 0 6px rgba(255, 107, 107, 0.14); }
+.uidHeroInput.uidHeroOk { border-color: #4ade80; box-shadow: 0 0 0 6px rgba(74, 222, 128, 0.14); }
+.uidHeroPaste {
+  position: absolute; right: 14px; top: 50%; transform: translateY(-50%); display: inline-flex; align-items: center; gap: 6px; height: 44px; padding: 0 16px;
+  border-radius: 10px; border: 0; background: var(--ex); color: #000; font: inherit; font-size: 15px; font-weight: 600; cursor: pointer;
+}
+.uidHeroPaste img { filter: invert(1); }
+.uidHeroStatus { min-height: 48px; text-align: center; }
+.uidHeroStatus .error, .uidHeroStatus .hint { margin: 0; text-align: center; }
+.unlockChips { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; margin: 0; padding: 0; list-style: none; }
+.unlockChips li { display: inline-flex; align-items: center; gap: 8px; padding: 8px 14px; border-radius: 99px; background: rgba(3, 6, 10, 0.55); border: 1px solid rgba(255, 255, 255, 0.08); font-size: 14px; color: var(--tx-fg-soft); }
+.lastStep { margin: 0 0 4px; display: inline-flex; align-items: center; height: 28px; padding: 0 12px; border-radius: 99px; background: var(--ex); color: #000; font-size: 13px; font-weight: 600; letter-spacing: 0.04em; text-transform: uppercase; }
+@media (max-width: 1023px) {
+  .connectBody { width: 100%; padding-bottom: 200px; }
+  .needGrid, .connectSplit { grid-template-columns: 1fr; }
+  .needGrid li { flex-direction: row; text-align: left; align-items: flex-start; }
+  .stepStrip { grid-template-columns: 1fr; justify-items: start; }
+  .stepStrip li { flex-direction: row; text-align: left; }
+  .connectCta { padding-bottom: 72px; }
+  .uidHeroInput { height: 72px; font-size: 26px; padding: 0 110px 0 20px; text-align: left; }
+}
+.uidSample { display: flex; flex-direction: column; gap: 4px; padding-top: 12px; border-top: 1px solid rgba(255, 255, 255, 0.08); }
+.uidSample .questionLabel { margin: 0; font-size: 15px; }
+.uidSample .refCode { font-size: 24px; }
+.connectMiddle { justify-content: center; padding-bottom: 96px; }
+.connectBody > .segmented { align-self: center; }
+.connectWide { padding-bottom: 150px; }
+.connectNarrow .planBlock, .connectNarrow .safety { width: 100%; }
+@media (max-width: 1023px) {
+  .connectCta { padding-top: 32px; background: linear-gradient(to top, rgba(4, 7, 14, 0.98) 0%, rgba(4, 7, 14, 0.98) 82%, rgba(4, 7, 14, 0) 100%); }
+  .connectBody, .connectWide { padding-bottom: 270px; }
 }

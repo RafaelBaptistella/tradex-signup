@@ -124,6 +124,21 @@ export function SignupVisual({ children }: { children?: ReactNode }) {
 
 export { s as styles };
 
+/**
+ * Connect flow: the main action, fixed at the bottom centre so it never moves between steps.
+ * The note under it has a fixed height, so a longer or shorter note doesn't move the button either.
+ */
+export function ConnectCta({ children, note }: { children: ReactNode; note?: ReactNode }) {
+  return (
+    <div className={s.connectCta}>
+      <div className={s.connectCtaInner}>
+        {children}
+        <div className={s.connectCtaNote}>{note}</div>
+      </div>
+    </div>
+  );
+}
+
 /** EU rules: risk warning, how TradeX earns, and the prize pool rules. Shown wherever we ask people to trade or connect. */
 export function Disclosure({ left }: { left?: boolean }) {
   return (
@@ -132,4 +147,9 @@ export function Disclosure({ left }: { left?: boolean }) {
       <span className={s.line}><a href="/prize-pool-rules" target="_blank" rel="noreferrer">Prize pool rules</a></span>
     </p>
   );
+}
+
+/** Small tag in the exchange colour ("Best for beginners", "Most members"). Shared by the A-07 cards and the paywall options. */
+export function Tag({ children, className = '' }: { children: ReactNode; className?: string }) {
+  return <span className={`${s.badge} ${className}`}>{children}</span>;
 }

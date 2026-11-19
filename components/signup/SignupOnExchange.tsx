@@ -2,14 +2,14 @@
 
 /**
  * Flow A · A-11 · Step 2/5 · Sign up on the exchange.
- * Canvas requirements: annotated screenshots of each exchange sign-up screen; callout to confirm the referral
+ * Canvas requirements: annotated screenshots of each exchange sign-up screen; a line to confirm the referral
  * code field shows the TradeX code; a tick-list the user checks off (email, password, code confirmed);
  * desktop / mobile tabs. Events: connect_step_viewed {2: signup}, connect_substep_checked {item}.
  * Prints: Bitunix English sign-up pages (Nov 2026), with some of the page around the form (Nov 19, 2026: 4:3 frames with the page around them, so the columns line up).
  */
 import { useEffect, useRef, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { StepHeader, PrimaryButton, Callout, Lines, Shot, styles as s } from './parts';
+import { StepHeader, PrimaryButton, Lines, Shot, ConnectCta, styles as s } from './parts';
 import HelpDrawer from './HelpDrawer';
 import { AFFILIATE, REGISTER_PRINT, exchangeById, type ExchangeId, type Print } from '@/lib/exchanges';
 import { brand, track } from '@/lib/track';
@@ -84,6 +84,7 @@ export default function SignupOnExchange() {
 
   const steps = subSteps(ex.id, code);
   const allDone = steps.every((st) => done[st.key]);
+  const left = steps.filter((st) => !done[st.key]).length;
 
   const toggle = (key: string) => {
     setDone((d) => {
@@ -94,27 +95,22 @@ export default function SignupOnExchange() {
   };
 
   return (
-    <main className={s.centerPage}>
-      <div className={s.mountains} aria-hidden><div className={s.noise} /></div>
-      <div className={s.grid} aria-hidden />
-
+    <>
       <div className={s.centerMain}>
         <StepHeader step={2} total={CONNECT_STEPS} onBack={() => router.push(`/connect/open?exchange=${ex.id}`)} />
 
-        <div className={`${s.centerContent} ${s.stepsPage}`}>
-          <div className={s.stepsHeader}>
-            <div className={s.intro}>
-              <h1 className={s.title}>Sign up on {ex.name}</h1>
-              <p className={s.lead}><Lines text={`Three short screens on ${ex.name}. Tick each one here when you’re done.`} /></p>
-            </div>
+        <div className={`${s.connectBody} ${s.connectWide}`}>
+          <div className={s.connectIntro}>
+            <h1 className={s.title}>Sign up on {ex.name}</h1>
+            <p className={s.lead}><Lines text={`Three short screens on ${ex.name}. Check that “${REGISTER_PRINT[ex.id].field}” shows ${code}. Tick each screen here when you’re done.`} /></p>
+          </div>
 
-            <div className={s.segmented} role="tablist" aria-label="Device">
-              {(['desktop', 'phone'] as const).map((d) => (
-                <button key={d} type="button" role="tab" aria-selected={device === d} className={s.segment2} onClick={() => setDevice(d)}>
-                  {d === 'desktop' ? 'On a computer' : 'On a phone'}
-                </button>
-              ))}
-            </div>
+          <div className={s.segmented} role="tablist" aria-label="Device">
+            {(['desktop', 'phone'] as const).map((d) => (
+              <button key={d} type="button" role="tab" aria-selected={device === d} className={s.segment2} onClick={() => setDevice(d)}>
+                {d === 'desktop' ? 'On a computer' : 'On a phone'}
+              </button>
+            ))}
           </div>
 
           <ol className={`${s.subSteps} ${s.stepCols}`} style={{ '--cols': steps.length } as React.CSSProperties}>
@@ -128,37 +124,30 @@ export default function SignupOnExchange() {
                   </div>
                 </div>
                 <div className={s.stepBody}>
-                {st.shot && (
-                  <div className={s.stepShot}>
-                    {device === 'phone' && st.shot.mobile
-                      ? <Shot desktop={st.shot.mobile} alt={st.shot.alt} mark={st.shot.mobileMark} masks={st.shot.mobileMasks} />
-                      : <Shot desktop={st.shot.desktop} alt={st.shot.alt} mark={st.shot.mark} masks={st.shot.masks} />}
-                  </div>
-                )}
-                {st.shot && device === 'phone' && !st.shot.mobile && <p className={s.hint}>It looks the same on your phone.</p>}
-                <label className={s.checkRow}>
-                  <input type="checkbox" checked={!!done[st.key]} onChange={() => toggle(st.key)} />
-                  <span>{st.check}</span>
-                </label>
+                  {st.shot && (
+                    <div className={s.stepShot}>
+                      {device === 'phone' && st.shot.mobile
+                        ? <Shot desktop={st.shot.mobile} alt={st.shot.alt} mark={st.shot.mobileMark} masks={st.shot.mobileMasks} />
+                        : <Shot desktop={st.shot.desktop} alt={st.shot.alt} mark={st.shot.mark} masks={st.shot.masks} />}
+                    </div>
+                  )}
+                  {st.shot && device === 'phone' && !st.shot.mobile && <p className={s.hint}>It looks the same on your phone.</p>}
+                  <label className={s.checkRow}>
+                    <input type="checkbox" checked={!!done[st.key]} onChange={() => toggle(st.key)} />
+                    <span>{st.check}</span>
+                  </label>
                 </div>
               </li>
             ))}
           </ol>
-
-          <div className={s.stepsFooter}>
-            <Callout title={`Check the code before you finish`}>{`If “${REGISTER_PRINT[ex.id].field}” was empty, the account isn’t linked to TradeX. Go back to ${ex.name}’s first screen and paste ${code}.`}</Callout>
-
-            <div className={s.choiceActions}>
-              <PrimaryButton onClick={() => router.push(`/connect/kyc?exchange=${ex.id}`)} disabled={!allDone}>I’ve signed up on {ex.name}</PrimaryButton>
-              <p className={s.hint}>{allDone ? 'Next: verify your identity.' : `Tick the ${steps.filter((st) => !done[st.key]).length} remaining step${steps.filter((st) => !done[st.key]).length === 1 ? '' : 's'} to continue.`}</p>
-            </div>
-          </div>
         </div>
-
-        <div className={s.spacer} aria-hidden />
       </div>
 
+      <ConnectCta note={allDone ? 'Next: verify your identity.' : `Tick the ${left} remaining step${left === 1 ? '' : 's'} to continue.`}>
+        <PrimaryButton onClick={() => router.push(`/connect/kyc?exchange=${ex.id}`)} disabled={!allDone}>I’ve signed up on {ex.name}</PrimaryButton>
+      </ConnectCta>
+
       <HelpDrawer step="connect_signup" exchange={ex.name} exchangeId={ex.id} />
-    </main>
+    </>
   );
 }

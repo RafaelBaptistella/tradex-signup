@@ -14,11 +14,28 @@ import type { ExchangeId } from '@/lib/exchanges';
 import { track } from '@/lib/track';
 import { useEU } from '@/lib/compliance';
 
-export type LockedFeature = 'cashback' | 'ranking' | 'courses';
+/**
+ * cashback, ranking: B and C. courses: C only (advanced courses during the trial).
+ * journal, events, community, partners, analyses: B only (soft lock, Nov 19, 2026: B keeps the dashboard, Ranks & Rewards and Courses open).
+ */
+export const LOCKED_FEATURES = ['cashback', 'ranking', 'courses', 'journal', 'events', 'community', 'partners', 'analyses'] as const;
+export type LockedFeature = (typeof LOCKED_FEATURES)[number];
 
 type Copy = { top: string; art: 'gem' | 'forma'; title: string; text: string; trialTitle: string; trialText: string; gets: PaywallItem[] };
 
+const OPENS: PaywallItem[] = [
+  { icon: 'forum', text: 'Community, Discord and daily live trading' },
+  { icon: 'chart-candlestick', text: 'Analyses, events and your trading journal' },
+  { icon: 'trophy', text: 'The leaderboard and monthly rewards' }
+];
+const soft = (top: string, title: string, text: string): Copy => ({ top, art: 'forma', title, text, trialTitle: title, trialText: text, gets: OPENS });
+
 const CONTENT: Record<LockedFeature, Copy> = {
+  journal: soft('Trading Journal', 'Your trading journal opens when you connect', 'Log every trade from your exchange and see what works. Courses and your rank path are already open.'),
+  events: soft('Events', 'Events open when you connect', 'Live sessions, workshops and Q&As with the coaches. Courses and your rank path are already open.'),
+  community: soft('Community', 'The community opens when you connect', 'Trade alongside members and coaches on Discord every day. Courses and your rank path are already open.'),
+  partners: soft('Partnerships', 'Partner deals open when you connect', 'Discounts and offers from TradeX partners. Courses and your rank path are already open.'),
+  analyses: soft('Analyses', 'Market analyses open when you connect', 'Daily and weekly reads of the market from the coaches. Courses and your rank path are already open.'),
   cashback: {
     top: 'Monthly rewards', art: 'gem',
     title: 'Monthly rewards open when you connect',

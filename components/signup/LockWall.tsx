@@ -11,7 +11,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Paywall from '@/components/paywall/Paywall';
-import p from '@/components/paywall/paywall.module.css';
 import { DISCORD_SUPPORT } from '@/lib/help';
 import { connectPath } from '@/lib/exchanges';
 import { setFlow, track } from '@/lib/track';
@@ -57,21 +56,22 @@ export default function LockWall() {
       ]}
       exchanges
       primary={{ label: (n) => `Connect ${n}`, onClick: (ex) => { track('exchange_connect_started', { source: 'lockwall', exchange: ex }); router.push(connectPath('c', ex)); } }}
-      footer={
+      footer={<span>Takes about 10 minutes. We guide every step.</span>}
+      // Nov 19, 2026: the risk and commission lines already show on every screen before this one, so the lock wall stays light.
+      disclosure={false}
+      bottom={
         <>
-          <span>Takes about 10 minutes. We guide every step.</span>
-          <span className={p.links}>
-            <a href={DISCORD_SUPPORT} target="_blank" rel="noreferrer" onClick={() => track('lockwall_support_clicked')}>Contact support</a>
-            <span aria-hidden>·</span>
-            <a href="/c" onClick={() => track('lockwall_logout_clicked')}>Log out</a>
-          </span>
+          <a href={DISCORD_SUPPORT} target="_blank" rel="noreferrer" onClick={() => track('lockwall_support_clicked')}>Contact support</a>
+          <span aria-hidden>·</span>
+          <a href="/c" onClick={() => track('lockwall_logout_clicked')}>Log out</a>
           {/* Placeholder links: the account settings pages for these rights aren't built yet. */}
           {eu && (
-            <span className={p.links}>
+            <>
+              <span aria-hidden>·</span>
               <a href="#" onClick={(e) => { e.preventDefault(); track('lockwall_data_download_clicked'); }}>Download my data</a>
               <span aria-hidden>·</span>
               <a href="#" onClick={(e) => { e.preventDefault(); track('lockwall_delete_account_clicked'); }}>Delete account</a>
-            </span>
+            </>
           )}
         </>
       }

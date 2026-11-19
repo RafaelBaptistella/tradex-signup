@@ -1,29 +1,30 @@
-/* Paywall dialog (B-03, B-07/C-05, C-04 daily modals, C-09, C-11). Mobile-paywall look in TradeX blue. */
+/* Paywall dialog (B-03, B-07/C-05, C-04 daily modals, C-09, C-11).
+   Nov 19, 2026: horizontal on desktop (pitch left, decision right) so it fits one screen and reads like a thumbnail;
+   the product's own button and tag, no glow. One column on phones. */
 .overlay {
   position: fixed; inset: 0; z-index: 30; display: flex; justify-content: center; align-items: flex-start; overflow-y: auto;
   padding: 32px 16px; background: rgba(2, 5, 10, 0.72); -webkit-backdrop-filter: blur(6px); backdrop-filter: blur(6px);
 }
 .card {
   --glow: 64, 199, 244;
-  position: relative; width: min(460px, 100%); margin: auto 0; overflow: hidden; outline: none;
-  display: flex; flex-direction: column; gap: 16px; padding: 16px 20px 18px; border-radius: 24px;
-  background: radial-gradient(110% 55% at 50% 0%, rgba(var(--glow), 0.34) 0%, rgba(17, 102, 166, 0.16) 38%, rgba(7, 11, 18, 0) 72%), #070b12;
+  position: relative; width: min(880px, 100%); margin: auto 0; overflow: hidden; outline: none;
+  display: flex; flex-direction: column; gap: 8px; padding: 16px 24px 24px; border-radius: 24px;
+  background: radial-gradient(70% 70% at 25% 0%, rgba(var(--glow), 0.26) 0%, rgba(17, 102, 166, 0.12) 40%, rgba(7, 11, 18, 0) 75%), #070b12;
   border: 1px solid rgba(255, 255, 255, 0.1);
   box-shadow: 0 40px 120px rgba(0, 0, 0, 0.6), inset 0 1px 0 rgba(255, 255, 255, 0.08);
   color: var(--tx-fg);
 }
-.wide { width: min(720px, 100%); }
 .warn { --glow: 255, 176, 72; }
-.spot { position: absolute; inset: 0 0 auto; height: 260px; pointer-events: none; background: radial-gradient(40% 70% at 50% 0%, rgba(var(--glow), 0.35), transparent 70%); }
+.spot { position: absolute; inset: 0 auto auto 0; width: 50%; height: 300px; pointer-events: none; background: radial-gradient(50% 70% at 50% 0%, rgba(var(--glow), 0.3), transparent 70%); }
 .curtain {
-  position: absolute; inset: 0 0 auto; height: 280px; pointer-events: none; opacity: 0.9;
-  background: repeating-linear-gradient(90deg, rgba(255, 255, 255, 0.045) 0 2px, transparent 2px 26px);
-  -webkit-mask-image: radial-gradient(55% 100% at 50% 0%, #000 0%, transparent 85%); mask-image: radial-gradient(55% 100% at 50% 0%, #000 0%, transparent 85%);
+  position: absolute; inset: 0 auto auto 0; width: 50%; height: 300px; pointer-events: none; opacity: 0.9;
+  background: repeating-linear-gradient(90deg, rgba(255, 255, 255, 0.04) 0 2px, transparent 2px 26px);
+  -webkit-mask-image: radial-gradient(60% 100% at 50% 0%, #000 0%, transparent 85%); mask-image: radial-gradient(60% 100% at 50% 0%, #000 0%, transparent 85%);
 }
 .card > * { position: relative; }
 .card > .spot, .card > .curtain { position: absolute; }
 
-/* Three columns with equal sides, so the label stays centred whatever sits left and right; it wraps when space runs out. */
+/* Three columns with equal sides, so the label stays centred whatever sits left and right. */
 .top { display: grid; grid-template-columns: minmax(40px, 1fr) minmax(0, auto) minmax(40px, 1fr); align-items: center; gap: 12px; min-height: 40px; }
 .top > :last-child { justify-self: end; }
 .topSpacer { width: 40px; }
@@ -38,82 +39,103 @@
   background: rgba(var(--glow), 0.16); border: 1px solid rgba(var(--glow), 0.4); font-size: 13px; font-weight: 500;
 }
 
-.art { position: relative; height: 132px; display: grid; place-items: center; margin-top: -8px; }
-.gem { width: 132px; height: 132px; object-fit: contain; filter: drop-shadow(0 0 36px rgba(var(--glow), 0.55)); animation: float 6s ease-in-out infinite; }
-.forma { width: auto; height: 170px; object-fit: contain; mix-blend-mode: screen; animation: float 6s ease-in-out infinite;
+/* Pitch left, decision right */
+.body { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 32px; align-items: center; }
+.pitch { display: flex; flex-direction: column; align-items: center; gap: 16px; text-align: center; }
+.decide { display: flex; flex-direction: column; gap: 12px; }
+
+.art { position: relative; height: 120px; width: 100%; display: grid; place-items: center; }
+.gem { width: 120px; height: 120px; object-fit: contain; filter: drop-shadow(0 0 28px rgba(var(--glow), 0.45)); animation: float 6s ease-in-out infinite; }
+.forma { width: auto; height: 150px; object-fit: contain; mix-blend-mode: screen; animation: float 6s ease-in-out infinite;
   -webkit-mask-image: radial-gradient(closest-side, #000 55%, transparent 100%); mask-image: radial-gradient(closest-side, #000 55%, transparent 100%); }
-.spark { position: absolute; width: 22px; height: 22px; background: #eaf8ff; clip-path: polygon(50% 0, 61% 39%, 100% 50%, 61% 61%, 50% 100%, 39% 61%, 0 50%, 39% 39%); filter: drop-shadow(0 0 8px rgba(var(--glow), 0.9)); }
-.sparkA { top: 6px; left: calc(50% + 62px); }
-.sparkB { bottom: 18px; left: calc(50% - 86px); width: 14px; height: 14px; opacity: 0.8; }
+.spark { position: absolute; width: 20px; height: 20px; background: #eaf8ff; clip-path: polygon(50% 0, 61% 39%, 100% 50%, 61% 61%, 50% 100%, 39% 61%, 0 50%, 39% 39%); filter: drop-shadow(0 0 8px rgba(var(--glow), 0.9)); }
+.sparkA { top: 4px; left: calc(50% + 56px); }
+.sparkB { bottom: 14px; left: calc(50% - 78px); width: 12px; height: 12px; opacity: 0.8; }
 @keyframes float { 50% { transform: translateY(-6px); } }
 @media (prefers-reduced-motion: reduce) { .gem, .forma { animation: none; } }
 
-.head { display: flex; flex-direction: column; gap: 6px; text-align: center; }
+.head { display: flex; flex-direction: column; gap: 8px; }
 .title { margin: 0; font-size: 28px; font-weight: 500; line-height: 1.2; letter-spacing: -0.01em; text-wrap: balance; }
 .lead { margin: 0; font-size: 15px; line-height: 1.5; color: var(--tx-fg-muted); text-wrap: pretty; }
 
-.sections { display: grid; gap: 10px; }
-.sectionsTwo { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 .section { display: flex; flex-direction: column; gap: 8px; }
 .sectionTitle { margin: 0; padding-left: 4px; font-size: 13px; font-weight: 500; color: var(--tx-fg-muted); }
 .list {
-  margin: 0; padding: 6px; list-style: none; display: flex; flex-direction: column; gap: 2px; flex: 1;
+  margin: 0; padding: 6px; list-style: none; display: flex; flex-direction: column; gap: 2px;
   border-radius: 16px; background: rgba(255, 255, 255, 0.04); border: 1px solid rgba(255, 255, 255, 0.08);
 }
 .list li { display: flex; align-items: center; gap: 12px; padding: 6px; font-size: 14px; line-height: 1.4; }
 .tile { width: 32px; height: 32px; flex: none; display: grid; place-items: center; border-radius: 10px; background: rgba(116, 211, 251, 0.1); border: 1px solid rgba(116, 211, 251, 0.18); }
 .itemText { flex: 1; text-wrap: pretty; }
-.itemCheck { flex: none; opacity: 0.7; }
 .itemMuted { color: var(--tx-fg-muted); }
 .itemMuted .tile { background: rgba(255, 255, 255, 0.05); border-color: rgba(255, 255, 255, 0.1); }
 
 /* Exchange accents, as on A-07. */
 .exBitunix { --ex: #96e556; --ex-rgb: 150, 229, 86; }
 .exPionex { --ex: #ff9428; --ex-rgb: 255, 148, 40; }
-.options { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+.options { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
 .option {
-  position: relative; display: flex; flex-direction: column; align-items: flex-start; gap: 2px; padding: 14px; border-radius: 16px; text-align: left;
+  position: relative; display: flex; flex-direction: column; align-items: flex-start; gap: 2px; padding: 12px 14px; border-radius: 12px; text-align: left;
   background: rgba(255, 255, 255, 0.04); border: 1px solid rgba(255, 255, 255, 0.1); color: var(--tx-fg); font: inherit; cursor: pointer;
 }
 .option:hover { background: rgba(255, 255, 255, 0.07); }
 .option:focus-visible { outline: 2px solid var(--ex); outline-offset: 2px; }
-.optionOn, .optionOn:hover { border-color: var(--ex); background: linear-gradient(180deg, rgba(var(--ex-rgb), 0.22) 0%, rgba(var(--ex-rgb), 0.04) 100%); }
-.optionHead { display: flex; align-items: center; gap: 8px; font-size: 14px; color: var(--tx-fg-soft); }
+.optionOn, .optionOn:hover { border-color: var(--ex); background: linear-gradient(180deg, rgba(var(--ex-rgb), 0.18) 0%, rgba(var(--ex-rgb), 0.03) 100%); }
+.optionHead { display: flex; align-items: center; gap: 8px; width: 100%; font-size: 14px; color: var(--tx-fg-soft); }
 .optionLogo { width: 20px; height: 20px; object-fit: contain; }
-.optionPool { margin-top: 6px; font-size: 22px; font-weight: 600; line-height: 1.2; }
+.optionPool { margin-top: 4px; font-size: 20px; font-weight: 600; line-height: 1.2; }
 .optionNote { font-size: 13px; color: var(--tx-fg-muted); }
-.optionBadge {
-  position: absolute; top: -10px; right: 10px; padding: 3px 10px; border-radius: 99px; transform: rotate(4deg);
-  background: linear-gradient(90deg, var(--ex), color-mix(in srgb, var(--ex) 60%, #fff)); color: #071006; font-size: 11px; font-weight: 600;
-  box-shadow: 0 4px 14px rgba(var(--ex-rgb), 0.45);
-}
+/* The shared A-07 tag (Tag in signup/parts), sitting on the card's top border. */
+.option .optionTag { top: -10px; right: 12px; background: color-mix(in srgb, var(--ex) 18%, #0b1018); color: var(--ex); box-shadow: 0 0 0 1px rgba(var(--ex-rgb), 0.35); }
+.bottom { display: flex; flex-wrap: wrap; justify-content: center; align-items: center; gap: 6px 10px; padding-top: 12px; border-top: 1px solid rgba(255, 255, 255, 0.08); font-size: 13px; color: var(--tx-fg-muted); }
+.bottom a { color: var(--tx-fg-soft); text-decoration: underline; text-underline-offset: 3px; }
 
-.actions { display: flex; flex-direction: column; align-items: center; gap: 4px; }
+/* The product's standard button (signup .button): white, or the exchange colour when an exchange is picked. */
+.actions { display: flex; flex-direction: column; align-items: stretch; gap: 2px; }
 .cta {
-  width: 100%; height: 52px; border: 0; border-radius: 14px; cursor: pointer; font: inherit; font-size: 17px; font-weight: 600; color: #03121c;
-  background: linear-gradient(180deg, #a6e6ff 0%, #40c7f4 55%, #1f9fd8 100%);
-  box-shadow: 0 10px 30px rgba(64, 199, 244, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.6);
+  width: 100%; height: 52px; display: flex; align-items: center; justify-content: center; padding: 6px; cursor: pointer;
+  border: 1px solid var(--tx-button-border); border-radius: var(--tx-radius); background: #fff; color: #000;
+  font: inherit; font-size: 17px; font-weight: 500; line-height: normal;
 }
-.ctaEx { background: linear-gradient(180deg, color-mix(in srgb, var(--ex) 55%, #fff) 0%, var(--ex) 60%, color-mix(in srgb, var(--ex) 80%, #000) 100%); box-shadow: 0 10px 30px rgba(var(--ex-rgb), 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.6); color: #0b0f06; }
-.cta:hover { filter: brightness(1.06); }
+.cta:hover { background: rgba(255, 255, 255, 0.9); }
+.ctaEx { background: var(--ex); border-color: transparent; color: #000; }
+.ctaEx:hover { background: var(--ex); filter: brightness(1.07); }
 .cta:focus-visible { outline: 2px solid #fff; outline-offset: 3px; }
-.secondary { height: 40px; padding: 0 16px; border: 0; background: none; color: var(--tx-fg-soft); font: inherit; font-size: 15px; font-weight: 500; cursor: pointer; }
+.secondary { align-self: center; height: 40px; padding: 0 16px; border: 0; background: none; color: var(--tx-fg-soft); font: inherit; font-size: 15px; font-weight: 500; cursor: pointer; }
 .secondary:hover { color: var(--tx-fg); }
-.footer { display: flex; flex-direction: column; align-items: center; gap: 6px; font-size: 13px; line-height: 1.5; color: var(--tx-fg-muted); text-align: center; }
+.footer { display: flex; flex-direction: column; align-items: center; gap: 4px; font-size: 13px; line-height: 1.5; color: var(--tx-fg-muted); text-align: center; }
 .footer a { color: var(--tx-fg-soft); text-decoration: underline; text-underline-offset: 3px; }
 .links { display: flex; gap: 10px; justify-content: center; }
 
-/* Small blocks some paywalls add (timeline, login form). */
+/* C-03: the 7 days as a horizontal stepper (today → last free day → pause). */
+.stepper { width: 100%; margin: 4px 0 0; padding: 0; list-style: none; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); }
+.stepper li { position: relative; display: flex; flex-direction: column; align-items: center; gap: 2px; padding-top: 22px; font-size: 13px; line-height: 1.35; color: var(--tx-fg-muted); text-align: center; }
+.stepper li::before { content: ''; position: absolute; top: 6px; left: 0; right: 0; height: 2px; background: rgba(255, 255, 255, 0.14); }
+.stepper li:first-child::before { left: 50%; background: linear-gradient(90deg, rgb(116, 211, 251), rgba(116, 211, 251, 0.4)); }
+.stepper li:nth-child(2)::before { background: linear-gradient(90deg, rgba(116, 211, 251, 0.4), rgba(255, 176, 72, 0.5)); }
+.stepper li:last-child::before { right: 50%; background: rgba(255, 176, 72, 0.5); }
+.stepDot { position: absolute; top: 0; left: 50%; width: 14px; height: 14px; margin-left: -7px; border-radius: 50%; background: #070b12; border: 2px solid rgba(255, 255, 255, 0.35); }
+.stepper b { color: var(--tx-fg); font-size: 14px; font-weight: 500; }
+.stepNow .stepDot { background: rgb(116, 211, 251); border-color: rgb(116, 211, 251); box-shadow: 0 0 0 4px rgba(116, 211, 251, 0.2); }
+.stepEnd .stepDot { border-color: rgb(255, 176, 72); }
+.stepEnd b { color: rgb(255, 196, 120); }
+.stepDate { font-size: 12px; color: rgba(255, 255, 255, 0.4); }
+
+/* Old timeline cards (kept for any caller still using them). */
 .timeline { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
 .timeline li { list-style: none; padding: 10px 12px; border-radius: 12px; background: rgba(255, 255, 255, 0.04); border: 1px solid rgba(255, 255, 255, 0.08); font-size: 13px; line-height: 1.4; color: var(--tx-fg-muted); }
 .timeline li b { display: block; color: var(--tx-fg); font-weight: 500; font-size: 14px; }
-.timeline li:first-child { border-color: rgba(116, 211, 251, 0.45); background: rgba(116, 211, 251, 0.08); }
 .timelineList { margin: 0; padding: 0; }
 .form { display: flex; flex-direction: column; gap: 12px; text-align: left; }
 
-@media (max-width: 640px) {
+@media (max-width: 760px) {
   .overlay { padding: 12px; }
-  .sectionsTwo, .timeline { grid-template-columns: 1fr; }
+  .card { padding: 14px 16px 18px; }
+  .body { grid-template-columns: 1fr; gap: 16px; }
+  .spot, .curtain { width: 100%; }
+  .art { height: 96px; }
+  .gem { width: 96px; height: 96px; }
+  .forma { height: 120px; }
   .title { font-size: 24px; }
 }
 
