@@ -1,85 +1,45 @@
 'use client';
 
 /**
- * Advent Calendar (new feature, wireframe, Nov 19, 2026). Lives in this prototype for now so César can see it next to
+ * Advent Calendar (new feature, wireframe). Lives in this prototype for now so César can see it next to
  * the signup test; it moves to its own codebase later.
  * Asana brief, translated from German: new platform page "TRADEX ADVENT CALENDAR", sponsored by Kraken.
  * Subheadline: "Draw your ticket every day for a chance at daily prizes!" Date (XX.XX.XXXX), the prize asset to win,
  * CTA "Join now". The requirement is a Kraken account connected to TradeX: without it, a popup asks to connect;
  * once someone took the ticket, it must show they're in the pot.
- * Prizes aren't known yet, so the 24 cards are placeholders by prize type; day 1 shows a drawn example (Ethereum).
- * Prototype: ?today=1–24 sets the current day (default 4), ?kraken=1 starts with Kraken connected, ?ticket=1 with today's ticket taken.
+ * Nov 20, 2026: calmer. Coming-up days show only their number; hovering a day shows its prize in a tooltip that follows
+ * the cursor. The live stream gets a small thumbnail (playing while live) next to the countdown, and the Kraken
+ * requirement moves under the calendar. Kraken logo and purple (#7132F5) from kraken.com.
+ * Prototype: ?today=1–24 (default 4), ?kraken=1 Kraken connected, ?ticket=1 ticket taken, ?live=0 stream off air (live by default),
+ * ?layout=grid equal cards instead of the bento, ?layout=carousel the V3 carousel.
+ * Events: advent_viewed, advent_day_hovered {day, state}, advent_stream_clicked, advent_ticket_taken,
+ * advent_connect_prompt_viewed, advent_connect_banner_clicked, advent_kraken_connect_started.
  */
 import Image from 'next/image';
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useRef, useState, type MouseEvent } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { track } from '@/lib/track';
 import p from '@/components/paywall/paywall.module.css';
+import { DAYS, DRAW_HOUR, KIND_LABEL, WINNERS, adventToday, pad, useDrawCountdown, type Day, type Kind } from './adventData';
+import AdventCarousel from './AdventCarousel';
 import a from './advent.module.css';
 
-type Kind = 'crypto' | 'merch' | 'voucher' | 'course' | 'mystery' | 'grand';
-type Tone = 'violet' | 'ink' | 'light' | 'blue';
-type Look = 'stripes' | 'dots' | 'zigzag' | 'grid' | 'rings' | 'plain';
-/** tone: which corner the lantern comes from. look: kept from the first wireframe, not used for styling any more. */
-type Day = { day: number; area: [number, number, number, number]; kind: Kind; tone: Tone; look: Look; word?: string };
-
-/** Bento: 8 columns × 5 rows, every cell used once. area = [row, column, rows, columns]. */
-const DAYS: Day[] = [
-  { day: 1, area: [1, 1, 2, 2], kind: 'crypto', tone: 'violet', look: 'rings' },
-  { day: 2, area: [1, 3, 1, 1], kind: 'merch', tone: 'light', look: 'dots' },
-  { day: 3, area: [1, 4, 2, 1], kind: 'voucher', tone: 'ink', look: 'zigzag' },
-  { day: 4, area: [1, 5, 1, 2], kind: 'crypto', tone: 'blue', look: 'stripes' },
-  { day: 5, area: [1, 7, 1, 1], kind: 'course', tone: 'ink', look: 'grid' },
-  { day: 6, area: [1, 8, 2, 1], kind: 'mystery', tone: 'violet', look: 'stripes', word: 'Nikolaus' },
-  { day: 7, area: [2, 3, 1, 1], kind: 'voucher', tone: 'violet', look: 'dots' },
-  { day: 8, area: [2, 5, 2, 1], kind: 'merch', tone: 'light', look: 'zigzag' },
-  { day: 9, area: [2, 6, 1, 2], kind: 'crypto', tone: 'ink', look: 'rings' },
-  { day: 10, area: [3, 1, 2, 1], kind: 'course', tone: 'blue', look: 'grid' },
-  { day: 11, area: [3, 2, 1, 2], kind: 'mystery', tone: 'ink', look: 'plain', word: 'Lucky draw' },
-  { day: 12, area: [3, 4, 1, 1], kind: 'crypto', tone: 'light', look: 'stripes', word: 'Halfway' },
-  { day: 13, area: [3, 6, 1, 1], kind: 'voucher', tone: 'violet', look: 'zigzag' },
-  { day: 14, area: [3, 7, 1, 2], kind: 'merch', tone: 'blue', look: 'dots' },
-  { day: 15, area: [4, 2, 1, 1], kind: 'course', tone: 'ink', look: 'stripes' },
-  { day: 16, area: [4, 3, 1, 2], kind: 'crypto', tone: 'violet', look: 'grid' },
-  { day: 17, area: [4, 5, 1, 1], kind: 'mystery', tone: 'light', look: 'rings' },
-  { day: 18, area: [4, 6, 1, 2], kind: 'voucher', tone: 'ink', look: 'zigzag' },
-  { day: 19, area: [4, 8, 1, 1], kind: 'merch', tone: 'violet', look: 'dots' },
-  { day: 20, area: [5, 1, 1, 1], kind: 'course', tone: 'light', look: 'grid' },
-  { day: 21, area: [5, 2, 1, 1], kind: 'crypto', tone: 'blue', look: 'rings' },
-  { day: 22, area: [5, 3, 1, 2], kind: 'mystery', tone: 'ink', look: 'stripes' },
-  { day: 23, area: [5, 5, 1, 1], kind: 'voucher', tone: 'violet', look: 'plain' },
-  { day: 24, area: [5, 6, 1, 3], kind: 'grand', tone: 'violet', look: 'rings', word: 'Grand prize' }
-];
-
-const KIND_LABEL: Record<Kind, string> = { crypto: 'Crypto', merch: 'Merch', voucher: 'Fee voucher', course: 'Course', mystery: 'Surprise', grand: 'Grand prize' };
-/** Wireframe: the prizes aren't decided. Day 1 is the drawn example. */
-const DRAWN: Record<number, { prize: string; detail: string; winner: string }> = {
-  1: { prize: '0.25 ETH', detail: 'Ethereum', winner: 'alex_k***' },
-  2: { prize: 'Prize TBA', detail: 'Merch pack', winner: 'mara***' },
-  3: { prize: 'Prize TBA', detail: 'Fee voucher', winner: 'jonas_t***' }
-};
-
-const DRAW_HOUR = 18; // daily draw, announced live by Tim
-const pad = (n: number) => String(n).padStart(2, '0');
+type Tip = { day: Day; state: 'past' | 'today' | 'future'; x: number; y: number };
 
 export default function AdventCalendar() {
   const params = useSearchParams();
-  const today = Math.min(24, Math.max(1, Number(params.get('today')) || 4));
+  const today = adventToday(params.get('today'));
+  const equal = params.get('layout') === 'grid';
+  const carousel = params.get('layout') === 'carousel';
   const [kraken, setKraken] = useState(params.get('kraken') === '1');
   const [ticket, setTicket] = useState(params.get('ticket') === '1');
   const [ask, setAsk] = useState(false);
-  const [left, setLeft] = useState(0);
+  const [tip, setTip] = useState<Tip | null>(null);
+  const hovered = useRef(0);
+  const clock = useDrawCountdown();
+  const liveNow = params.get('live') !== '0';
 
-  useEffect(() => { track('advent_viewed', { day: today, kraken_connected: kraken }); }, []); // eslint-disable-line react-hooks/exhaustive-deps
-  useEffect(() => {
-    const tick = () => {
-      const now = new Date(); const next = new Date(now); next.setHours(DRAW_HOUR, 0, 0, 0);
-      if (next <= now) next.setDate(next.getDate() + 1);
-      setLeft(Math.floor((next.getTime() - now.getTime()) / 1000));
-    };
-    tick(); const t = window.setInterval(tick, 1000); return () => window.clearInterval(t);
-  }, []);
-  const clock = useMemo(() => [Math.floor(left / 3600), Math.floor((left % 3600) / 60), left % 60], [left]);
+  useEffect(() => { track('advent_viewed', { day: today, kraken_connected: kraken, layout: carousel ? 'carousel' : equal ? 'grid' : 'bento' }); }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   const join = () => {
     if (!kraken) { track('advent_connect_prompt_viewed', { day: today }); setAsk(true); return; }
@@ -92,35 +52,90 @@ export default function AdventCalendar() {
     setKraken(true); setAsk(false); setTicket(true);
   };
   const tickets = (today - 1 > 0 && kraken ? Math.min(2, today - 1) : 0) + (ticket ? 1 : 0);
+  const stateOf = (d: Day) => (d.day < today ? 'past' : d.day === today ? 'today' : 'future') as Tip['state'];
+
+  const move = (e: MouseEvent<HTMLLIElement>, d: Day) => {
+    const state = stateOf(d);
+    if (hovered.current !== d.day) { hovered.current = d.day; track('advent_day_hovered', { day: d.day, state }); }
+    setTip({ day: d, state, x: e.clientX, y: e.clientY });
+  };
 
   return (
     <div className={a.page}>
       <header className={a.head}>
         <div className={a.headText}>
-          <p className={a.sponsor}>Sponsored by <KrakenMark /></p>
+          <p className={a.sponsor}>Sponsored by <Image src="/advent/kraken-logo-white.svg" alt="Kraken" width={84} height={13} /></p>
           <h1 className={a.title}>TradeX Advent Calendar</h1>
-          <p className={a.sub}>Draw your ticket every day for a chance at daily prizes. 1 to 24 December 2026.</p>
+          <p className={a.sub}>Draw your ticket every day for a chance at daily prizes.<br />24 days, 24 prizes, one draw a day live at {DRAW_HOUR}:00 CET.</p>
         </div>
-        {/* Everything about the draw in one place: when it happens, where it's announced, and the way in. */}
-        <div className={a.drawBox}>
-          <div className={a.countdown} aria-label={`Next draw in ${clock[0]} hours ${clock[1]} minutes`}>
-            <span className={a.countLabel}>Next draw in</span>
-            <div className={a.countBoxes}>
-              {(['Hours', 'Minutes', 'Seconds'] as const).map((u, i) => (
-                <span key={u} className={a.countBox}><b>{pad(clock[i])}</b><small>{u}</small></span>
-              ))}
-            </div>
-          </div>
-          <div className={a.liveRow}>
-            <span className={a.live}><span className={a.liveDot} aria-hidden />Tim announces the winner live at {DRAW_HOUR}:00 CET</span>
-            <a className={a.liveBtn} href="#" onClick={(e) => { e.preventDefault(); track('advent_stream_clicked', { day: today }); }}>Watch the stream</a>
-          </div>
-        </div>
+
+        {/* Nov 20, 2026: the live draw as a media card (thumbnail, what's on, one button), like the "Continue watching" card.
+            Live by default in the prototype; ?live=0 shows the off-air state, which links to the channel. */}
+        <section className={`${a.stream} ${liveNow ? a.streamLive : ''}`} aria-label="Live draw">
+          <span className={a.thumb}>
+            <Image className={a.thumbImg} src="/advent/stream-thumb.jpg" alt="" fill sizes="240px" />
+            {liveNow
+              ? <><span className={a.liveBadge}><i aria-hidden />Live</span><span className={a.viewers}>1.2k watching</span><span className={a.thumbBar} aria-hidden /></>
+              : <span className={a.offBadge}><i aria-hidden />Off air</span>}
+          </span>
+          <span className={a.streamText}>
+            <span className={a.streamEyebrow}>{liveNow ? 'Live now' : `Daily live draw · ${DRAW_HOUR}:00 CET`}</span>
+            <b className={a.streamTitle}>{liveNow ? `Tim draws the day ${today} winner` : 'Tim draws live every day'}</b>
+            <span className={a.streamDesc}>{liveNow ? `The winner is drawn live at ${DRAW_HOUR}:00 CET.` : 'Every draw is streamed on the TradeX channel.'}</span>
+            {/* Nov 20, 2026: the countdown sits left of the button, which moves to the bottom-right corner. */}
+            <span className={a.streamFoot}>
+              <span className={a.streamCount} aria-label={`Draw in ${clock[0]} hours ${clock[1]} minutes`}>
+                <span>Draw in</span><b>{pad(clock[0])}:{pad(clock[1])}:{pad(clock[2])}</b>
+              </span>
+              <a className={a.streamBtn} href="#" onClick={(e) => { e.preventDefault(); track('advent_stream_clicked', { day: today, live: liveNow }); }}>
+                {liveNow
+                  ? <><svg viewBox="0 0 24 24" width="14" height="14" aria-hidden><path d="M7 5v14l12-7z" fill="currentColor" /></svg>Watch live</>
+                  : 'Open the channel'}
+              </a>
+            </span>
+          </span>
+        </section>
       </header>
 
-      {/* The Kraken requirement: a full-width banner (the dashboard banner pattern), not a tile. */}
+      {carousel ? <AdventCarousel today={today} ticket={ticket} onJoin={join} /> : (
+      <ol className={`${a.bento} ${equal ? a.equal : ''}`} aria-label="24 days of draws" onMouseLeave={() => { setTip(null); hovered.current = 0; }}>
+        {DAYS.map((d) => {
+          const state = stateOf(d);
+          const big = !equal && d.area[2] * d.area[3] >= 3;
+          return (
+            <li key={d.day} tabIndex={0}
+              aria-label={state === 'past' ? `Day ${d.day}, drawn: ${d.prize}, won by ${WINNERS[d.day] ?? 'a member'}` : `Day ${d.day}, ${d.day} December: ${KIND_LABEL[d.kind]}, ${d.prize}`}
+              style={equal ? undefined : { gridArea: `${d.area[0]} / ${d.area[1]} / span ${d.area[2]} / span ${d.area[3]}` }}
+              onMouseMove={(e) => move(e, d)}
+              className={`${a.cell} ${a['state_' + state]} ${big ? a.big : ''}`}>
+              <span className={a.num}>{d.day}</span>
+              {state === 'past' && (
+                <>
+                  <span className={a.drawnTag}><svg viewBox="0 0 16 16" width="10" height="10" aria-hidden><path d="M3 8.5l3 3 7-7" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" /></svg>Drawn</span>
+                  {/* Nov 20, 2026: only the prize on the card; the winner is in the tooltip. */}
+                  <span className={a.prize}><b>{d.prize}</b></span>
+                </>
+              )}
+              {state === 'today' && (
+                <>
+                  <span className={a.todayTag}>Today</span>
+                  <span className={a.todayRow}>
+                    <span className={a.prize}><b>{d.prize}</b><span className={`${a.prizeMeta} ${a.todayMeta}`}>{KIND_LABEL[d.kind]} · drawn at {DRAW_HOUR}:00</span></span>
+                    {ticket
+                      ? <span className={a.inPotSmall}><TicketIcon />You’re in</span>
+                      : <button type="button" className={a.cellBtn} onClick={join}>Join now</button>}
+                  </span>
+                </>
+              )}
+            </li>
+          );
+        })}
+      </ol>
+      )}
+
+      {/* The Kraken requirement, under the calendar (Nov 20, 2026), so the top of the page stays light. */}
       <section className={`${a.banner} ${kraken ? a.bannerOn : ''}`} aria-label="Your participation">
-        <span className={a.bannerIcon} aria-hidden>{kraken ? <TicketIcon /> : <KrakenGlyph />}</span>
+        <span className={a.bannerIcon} aria-hidden>{kraken ? <TicketIcon /> : <Image src="/advent/kraken-glyph-white.svg" alt="" width={18} height={14} />}</span>
         {kraken ? (
           <p className={a.bannerText}>
             <b>{ticket ? `You’re in the pot for day ${today}` : `Kraken connected. Day ${today} is open.`}</b>
@@ -134,59 +149,33 @@ export default function AdventCalendar() {
         )}
         {kraken
           ? (ticket ? <span className={a.inPot}><span className={a.okDot} aria-hidden />In the pot</span> : <button type="button" className={a.bannerBtn} onClick={join}>Join now</button>)
-          : <button type="button" className={a.bannerBtn} onClick={() => { track('advent_connect_banner_clicked', { day: today }); setAsk(true); }}>Connect Kraken</button>}
+          : <button type="button" className={`${a.bannerBtn} ${a.bannerBtnKraken}`} onClick={() => { track('advent_connect_banner_clicked', { day: today }); setAsk(true); }}>Connect Kraken</button>}
       </section>
 
-
-      <ol className={a.bento} aria-label="24 days of draws">
-        {DAYS.map((d) => {
-          const state = d.day < today ? 'past' : d.day === today ? 'today' : 'future';
-          const drawn = DRAWN[d.day];
-          return (
-            <li key={d.day} style={{ gridArea: `${d.area[0]} / ${d.area[1]} / span ${d.area[2]} / span ${d.area[3]}` }}
-              className={`${a.cell} ${a['tone_' + d.tone]} ${a['state_' + state]} ${d.area[2] * d.area[3] >= 3 ? a.big : ''} ${d.area[3] >= 2 ? a.wide : ''} ${d.word ? a.hasWord : ''}`}>
-              <span className={a.num}>{d.day}</span>
-              {state === 'future' && (
-                <>
-                  {d.word && <span className={a.word}>{d.word}</span>}
-                  <span className={a.icon} aria-hidden><KindIcon kind={d.kind} /></span>
-                  <span className={a.hint}>Opens {d.day} Dec</span>
-                </>
-              )}
-              {state === 'past' && (
-                <>
-                  <span className={a.drawnTag}><svg viewBox="0 0 16 16" width="10" height="10" aria-hidden><path d="M3 8.5l3 3 7-7" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" /></svg>Drawn</span>
-                  {d.kind === 'crypto' && d.day === 1 ? <span className={`${a.icon} ${a.iconLarge}`} aria-hidden><EthIcon /></span> : <span className={a.icon} aria-hidden><KindIcon kind={d.kind} /></span>}
-                  <span className={a.prize}><b>{drawn?.prize ?? 'Prize TBA'}</b>{drawn?.detail ?? KIND_LABEL[d.kind]}</span>
-                  <span className={a.winner}>Won by {drawn?.winner ?? '***'}</span>
-                </>
-              )}
-              {state === 'today' && (
-                <>
-                  <span className={a.todayTag}>Today</span>
-                  <span className={a.icon} aria-hidden><KindIcon kind={d.kind} /></span>
-                  <span className={a.todayRow}>
-                    <span className={a.prize}><b>{KIND_LABEL[d.kind]}</b>Revealed at {DRAW_HOUR}:00</span>
-                    {ticket
-                      ? <span className={a.inPotSmall}><TicketIcon />You’re in</span>
-                      : <button type="button" className={a.cellBtn} onClick={join}>Join now</button>}
-                  </span>
-                </>
-              )}
-            </li>
-          );
-        })}
-      </ol>
-
-      <div className={a.legend} aria-hidden>
+      {!carousel && <div className={a.legend} aria-hidden>
         <span><i className={a.legendDrawn} />Drawn</span>
         <span><i className={a.legendToday} />Today</span>
-        <span><i className={a.legendNext} />Coming up</span>
-      </div>
+        <span><i className={a.legendNext} />Coming up · hover for the prize</span>
+      </div>}
+
+      {tip && (
+        <div className={a.tip} role="tooltip" style={{ left: tip.x, top: tip.y }}>
+          <span className={a.tipHead}>
+            <span className={a.tipIcon} aria-hidden><KindIcon kind={tip.day.kind} /></span>
+            <span>{tip.state === 'past' ? `Day ${tip.day.day} · drawn` : tip.state === 'today' ? `Today · ${tip.day.day} Dec` : `${tip.day.day} December`}</span>
+          </span>
+          <b className={a.tipPrize}>{tip.day.prize}</b>
+          <span className={a.tipMeta}>
+            {tip.state === 'past'
+              ? `${KIND_LABEL[tip.day.kind]} · won by ${WINNERS[tip.day.day] ?? 'a member'}`
+              : `${KIND_LABEL[tip.day.kind]} · drawn live at ${DRAW_HOUR}:00 CET`}
+          </span>
+        </div>
+      )}
 
       {ask && (
         <div className={p.overlay} onClick={(e) => { if (e.target === e.currentTarget) setAsk(false); }}>
-          <div className={`${p.card} ${a.krakenCard}`} role="dialog" aria-modal="true" aria-labelledby="kraken-title">
+          <div className={`${p.card} ${a.krakenCard} ${a.hug}`} role="dialog" aria-modal="true" aria-labelledby="kraken-title">
             <div className={p.spot} aria-hidden />
             <div className={p.top}>
               <button type="button" className={p.close} onClick={() => setAsk(false)} aria-label="Close"><svg width="14" height="14" viewBox="0 0 16 16" aria-hidden><path d="M3 3l10 10M13 3L3 13" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" /></svg></button>
@@ -195,23 +184,27 @@ export default function AdventCalendar() {
             </div>
             <div className={p.body}>
               <div className={p.pitch}>
-                <div className={a.modalArt} aria-hidden><KrakenMark big /></div>
+                <div className={a.modalArt} aria-hidden><Image src="/advent/kraken-icon.svg" alt="" width={96} height={96} /></div>
                 <div className={p.head}>
                   <h2 id="kraken-title" className={p.title}>Connect Kraken to take your ticket</h2>
-                  <p className={p.lead}>The Advent Calendar is sponsored by Kraken. A Kraken account connected to TradeX gets you a free ticket every day.</p>
+                  <p className={p.lead}>The Advent Calendar is sponsored by Kraken.<br />Connect it to TradeX for a free ticket every day.</p>
                 </div>
               </div>
               <div className={p.decide}>
-                <ul className={p.list}>
-                  {['A ticket for today’s draw, and one every day until the 24th', 'Daily prizes, from crypto to merch', 'Winners announced live by Tim'].map((t, i) => (
-                    <li key={t}><span className={`${p.tile} ${a.tileKraken}`}><Image src={`/signup/icons/${['trophy', 'money', 'forum'][i]}.svg`} alt="" width={16} height={16} /></span><span className={p.itemText}>{t}</span></li>
-                  ))}
-                </ul>
+                <div className={p.decideTop}>
+                  <section className={p.section}>
+                    <h3 className={p.sectionTitle}>Your benefits</h3>
+                    <ul className={p.list}>
+                      {['A ticket for every day until the 24th', 'Daily prizes, from crypto to merch', 'Winners announced live by Tim'].map((t, i) => (
+                        <li key={t}><span className={p.tile}><Image src={`/signup/icons/${['trophy', 'money', 'forum'][i]}.svg`} alt="" width={20} height={20} /></span><span className={p.itemText}>{t}</span></li>
+                      ))}
+                    </ul>
+                  </section>
+                </div>
                 <div className={p.actions}>
                   <button type="button" className={`${p.cta} ${p.ctaEx} ${a.exKraken}`} onClick={connect}>Connect Kraken</button>
-                  <button type="button" className={p.secondary} onClick={() => setAsk(false)}>Not now</button>
+                  <div className={p.after}><button type="button" className={p.secondary} onClick={() => setAsk(false)}>Not now</button></div>
                 </div>
-                <div className={p.footer}><span>Already have Kraken? Connect it in about 2 minutes. New to Kraken? We guide you.</span></div>
               </div>
             </div>
           </div>
@@ -221,25 +214,6 @@ export default function AdventCalendar() {
   );
 }
 
-function KrakenGlyph() {
-  return <svg viewBox="0 0 24 24" width="20" height="20"><path d="M12 3C7.6 3 4 6.6 4 11v6.2c0 .9 1.1 1.4 1.8.7l.9-.9c.4-.4 1-.4 1.4 0l.9.9c.4.4 1 .4 1.4 0l.9-.9c.4-.4 1-.4 1.4 0l.9.9c.4.4 1 .4 1.4 0l.9-.9c.4-.4 1-.4 1.4 0l.9.9c.7.7 1.8.2 1.8-.7V11c0-4.4-3.6-8-8-8Zm-3 9.5a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3Zm6 0a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3Z" fill="currentColor" /></svg>;
-}
-
-/** Placeholder until the Kraken logo comes from Figma. */
-function KrakenMark({ big }: { big?: boolean }) {
-  return (
-    <span className={`${a.kraken} ${big ? a.krakenBig : ''}`}>
-      <svg viewBox="0 0 24 24" aria-hidden><path d="M12 3C7.6 3 4 6.6 4 11v6.2c0 .9 1.1 1.4 1.8.7l.9-.9c.4-.4 1-.4 1.4 0l.9.9c.4.4 1 .4 1.4 0l.9-.9c.4-.4 1-.4 1.4 0l.9.9c.4.4 1 .4 1.4 0l.9-.9c.4-.4 1-.4 1.4 0l.9.9c.7.7 1.8.2 1.8-.7V11c0-4.4-3.6-8-8-8Zm-3 9.5a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3Zm6 0a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3Z" fill="currentColor" /></svg>
-      kraken
-    </span>
-  );
-}
-
-function EthIcon() {
-  // Outline, same stroke as the other prize icons.
-  const s = { fill: 'none', stroke: 'currentColor', strokeWidth: 1.6, strokeLinecap: 'round' as const, strokeLinejoin: 'round' as const };
-  return <svg viewBox="0 0 24 24"><path d="M12 2.5 5.5 12.6 12 16.4l6.5-3.8z" {...s} /><path d="M5.5 14.2 12 21.5l6.5-7.3L12 18z" {...s} /><path d="M12 2.5v13.9" {...s} /></svg>;
-}
 
 function TicketIcon() {
   return <svg viewBox="0 0 24 24" width="16" height="16" aria-hidden><path d="M3 7a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v2a2 2 0 0 0 0 4v2a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-2a2 2 0 0 0 0-4z" fill="none" stroke="currentColor" strokeWidth="1.6" /><path d="M14 6v12" stroke="currentColor" strokeWidth="1.6" strokeDasharray="2 2" /></svg>;

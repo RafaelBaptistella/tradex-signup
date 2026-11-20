@@ -34,7 +34,7 @@ export default function Connected() {
       <Paywall
         id="connected" label="Welcome to TradeX!" art="gem"
         title="You’re in. Welcome, Rekrut!"
-        lead="Rekrut is your first rank. Every trade moves you up."
+        lead="Rekrut is your first rank. The leaderboard, ranks and all courses are open now."
         aside={
           <p className={s.connectedBadge}>
             <span className={s.cardLogo}><Image src={ex.logo.src} alt="" width={ex.logo.width * 0.75} height={ex.logo.height * 0.75} /></span>
@@ -42,11 +42,6 @@ export default function Connected() {
           </p>
         }
         sections={[
-          { title: 'Unlocked now', items: [
-            { icon: 'trophy', text: 'The monthly leaderboard and its prize pool' },
-            { icon: 'skill-level', text: 'Ranks, starting at Rekrut' },
-            { icon: 'education', text: 'All courses, community and live trading' }
-          ] },
           { title: 'Start here', items: [
             { icon: 'education', text: 'Your first course' },
             { icon: 'forum', text: 'Daily live trading on Discord' },

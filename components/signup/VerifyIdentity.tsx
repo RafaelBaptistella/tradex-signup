@@ -49,6 +49,7 @@ export default function VerifyIdentity() {
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   const steps = STEPS[ex.id];
+  const firstOpen = steps.findIndex((_, i) => !done[i]);
   const tick = (i: number) => {
     setDone((d) => {
       const next = { ...d, [i]: !d[i] };
@@ -71,7 +72,7 @@ export default function VerifyIdentity() {
 
           <ol className={`${s.subSteps} ${s.stepCols}`} style={{ '--cols': steps.length } as React.CSSProperties}>
             {steps.map((st, i) => (
-              <li key={st.title} className={`${s.subStep} ${done[i] ? s.subStepDone : ''}`}>
+              <li key={st.title} onClick={() => tick(i)} className={`${s.subStep} ${s.subStepClickable} ${done[i] ? s.subStepDone : i === firstOpen ? s.subStepNow : i > firstOpen ? s.subStepLater : ''}`}>
                 <div className={s.subStepHead}>
                   <span className={s.flowStepNum}>{i + 1}</span>
                   <div>
@@ -81,10 +82,10 @@ export default function VerifyIdentity() {
                 </div>
                 <div className={s.stepBody}>
                   {st.shot && <div className={s.stepShot}><Shot {...st.shot} /></div>}
-                  <label className={s.checkRow}>
-                    <input type="checkbox" checked={!!done[i]} onChange={() => tick(i)} />
+                  <button type="button" className={`${s.doneBtn} ${done[i] ? s.doneBtnOn : ''}`} aria-pressed={!!done[i]} onClick={(e) => { e.stopPropagation(); tick(i); }}>
+                    <span className={s.doneMark} aria-hidden><svg viewBox="0 0 16 16" width="12" height="12"><path d="M3.5 8.5l3 3 6-7" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" /></svg></span>
                     <span>{st.check}</span>
-                  </label>
+                  </button>
                 </div>
               </li>
             ))}

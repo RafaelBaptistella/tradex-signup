@@ -20,6 +20,7 @@ import { available, openNames, useEU } from '@/lib/compliance';
 import LockedFeatureSheet, { LOCKED_FEATURES, type LockedFeature } from './LockedFeatureSheet';
 import TrialDayModal, { DAYS, DAY_MODAL_KEY } from './TrialDayModal';
 import AdventCalendar from '@/components/advent/AdventCalendar';
+import AdventSideCard from '@/components/advent/AdventSideCard';
 import d from './dashboard.module.css';
 
 /**
@@ -29,7 +30,6 @@ import d from './dashboard.module.css';
 type Lock = { lockB?: LockedFeature; lockC?: LockedFeature };
 const NAV: ({ icon: string; label: string; href?: string; isNew?: boolean } & Lock)[] = [
   { icon: 'dashboard', label: 'Dashboard', href: '/dashboard' },
-  { icon: 'gift', label: 'Advent Calendar', href: '/advent', isNew: true },
   { icon: 'ranks', label: 'Ranks & Rewards', lockC: 'ranking' },
   { icon: 'courses', label: 'Courses' },
   { icon: 'journal', label: 'Trading Journal', lockB: 'journal' },
@@ -268,6 +268,8 @@ export default function Dashboard({ mode = 'a', overlay, entry, ended, view = 'h
             <Image src="/dashboard/icons/bell.svg" alt="Notifications" width={32} height={32} />
           </div>
           <div className={d.search}><Image src="/dashboard/icons/search.svg" alt="" width={20} height={20} />Search</div>
+          {/* Nov 20, 2026: the Advent Calendar is an annual event, so it gets a card here instead of a nav row. */}
+          <AdventSideCard active={view === 'advent'} from={view} />
           <div className={d.navLabel}>Platform</div>
           <nav className={d.nav} aria-label="Main">
             {NAV.map((n) => (

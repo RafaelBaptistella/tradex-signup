@@ -75,7 +75,7 @@ export default function FindUid() {
                 <p className={s.hint}><Lines text="Only numbers. It’s not your email, and not the TradeX code." /></p>
               </div>
             </div>
-            <Shot {...guide.print} />
+            <div className={s.splitMedia}><Shot {...guide.print} /></div>
           </div>
         </div>
       </div>

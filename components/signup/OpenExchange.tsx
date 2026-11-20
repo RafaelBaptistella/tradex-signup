@@ -83,7 +83,7 @@ export default function OpenExchange() {
               )}
             </section>
 
-            <figure className={s.preview} aria-label={`What you’ll see on ${ex.name}`}>
+            <figure className={`${s.preview} ${s.splitMedia}`} aria-label={`What you’ll see on ${ex.name}`}>
               <Shot {...REGISTER_PRINT[ex.id].print} />
             </figure>
           </div>

@@ -78,7 +78,7 @@ export default function LockedFeatureSheet({ feature, trialDay, onConnect, onClo
   const eu = useEU();
   // EU rules: the exchange's welcome offer is mentioned more quietly (no amounts).
   const c = eu && feature === 'cashback'
-    ? { ...CONTENT[feature], gets: CONTENT[feature].gets.map((g) => (g.icon === 'money' ? { ...g, text: 'A welcome offer from the exchange for new accounts' } : g)) }
+    ? { ...CONTENT[feature], gets: CONTENT[feature].gets.map((g) => (g.icon === 'money' ? { ...g, text: 'A welcome offer for new exchange accounts' } : g)) }
     : CONTENT[feature];
   const trial = trialDay !== undefined;
   const daysLeft = trial ? Math.max(1, 8 - trialDay) : 0;
@@ -91,7 +91,7 @@ export default function LockedFeatureSheet({ feature, trialDay, onConnect, onClo
       tone={trial && daysLeft <= 2 ? 'warn' : 'accent'}
       title={trial ? c.trialTitle : c.title}
       lead={trial ? c.trialText : c.text}
-      sections={[{ items: c.gets }]}
+      sections={[{ title: 'Your benefits', items: c.gets }]}
       exchanges
       primary={{ label: (n) => `Connect ${n}`, onClick: onConnect }}
       secondary={{ label: trial ? 'Keep exploring' : 'Not now', onClick: dismiss }}

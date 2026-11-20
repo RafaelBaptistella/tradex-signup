@@ -3,25 +3,19 @@
 /**
  * Flow C · C-09 · Lock wall. Shown from day 8 when the trial ended without a connected exchange (C-08 decides).
  * Canvas requirements: whole platform locked; only path is connecting an exchange.
- * Paywall-style modal over the locked platform (no close button): what they used during the trial, what opens,
+ * Paywall-style modal over the locked platform (no close button): what opens when they connect,
  * the two exchanges, Connect CTA, Contact support / Log out links.
  * EU rules: the wall keeps GDPR rights in reach (download data, delete account), not only Connect / Support / Log out.
  * Event: lockwall_viewed; exchange_connect_started {source: lockwall, exchange}.
  */
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import Paywall from '@/components/paywall/Paywall';
+import p from '@/components/paywall/paywall.module.css';
 import { DISCORD_SUPPORT } from '@/lib/help';
 import { connectPath } from '@/lib/exchanges';
 import { setFlow, track } from '@/lib/track';
 import { useEU } from '@/lib/compliance';
-
-/** Same three things as the C-04 “Your trial so far” panel. */
-const TRIED = [
-  { key: 'first_course', icon: 'education', done: 'You started the beginner course', todo: 'The beginner course is waiting' },
-  { key: 'join_discord', icon: 'forum', done: 'You joined the Discord', todo: 'The Discord live trading is waiting' },
-  { key: 'read_analysis', icon: 'chart-candlestick', done: 'You read a market analysis', todo: 'This week’s analysis is waiting' }
-];
 
 const UNLOCKS = [
   { icon: 'education', text: 'Courses, community and tools' },
@@ -32,13 +26,11 @@ const UNLOCKS = [
 export default function LockWall() {
   const router = useRouter();
   const eu = useEU();
-  const [used, setUsed] = useState<Record<string, boolean>>({});
   const viewed = useRef(false);
 
   useEffect(() => {
     let saved: Record<string, boolean> = {};
     try { saved = JSON.parse(sessionStorage.getItem('tx_trial_used') || '{}') || {}; } catch { /* nothing tried */ }
-    setUsed(saved);
     if (viewed.current) return;
     viewed.current = true;
     setFlow('c');
@@ -50,17 +42,15 @@ export default function LockWall() {
       id="lockwall" label="Free trial ended" labelLocked art="gem" wide tone="warn"
       title="Your free trial has ended"
       lead="Your account is safe and nothing is lost. Connect an exchange to open TradeX again."
-      sections={[
-        { title: 'Your trial', items: TRIED.map((t) => ({ icon: t.icon, text: used[t.key] ? t.done : t.todo, state: used[t.key] ? 'open' as const : 'todo' as const })) },
-        { title: 'Opens when you connect', items: UNLOCKS.map((u) => ({ ...u, state: 'locked' as const })) }
-      ]}
+      // Nov 20, 2026: one list, so the wall is the same size as every other paywall (the "Your trial" list is dropped; lockwall_viewed still counts it).
+      sections={[{ title: 'Opens when you connect', items: UNLOCKS.map((u) => ({ ...u, state: 'locked' as const })) }]}
       exchanges
       primary={{ label: (n) => `Connect ${n}`, onClick: (ex) => { track('exchange_connect_started', { source: 'lockwall', exchange: ex }); router.push(connectPath('c', ex)); } }}
-      footer={<span>Takes about 10 minutes. We guide every step.</span>}
       // Nov 19, 2026: the risk and commission lines already show on every screen before this one, so the lock wall stays light.
       disclosure={false}
-      bottom={
-        <>
+      // Nov 20, 2026: the account links sit in the slot under the button, like "Later" on the other paywalls.
+      footer={
+        <span className={p.links}>
           <a href={DISCORD_SUPPORT} target="_blank" rel="noreferrer" onClick={() => track('lockwall_support_clicked')}>Contact support</a>
           <span aria-hidden>·</span>
           <a href="/c" onClick={() => track('lockwall_logout_clicked')}>Log out</a>
@@ -73,7 +63,7 @@ export default function LockWall() {
               <a href="#" onClick={(e) => { e.preventDefault(); track('lockwall_delete_account_clicked'); }}>Delete account</a>
             </>
           )}
-        </>
+        </span>
       }
     />
   );

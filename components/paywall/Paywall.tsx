@@ -36,6 +36,8 @@ type Props = {
   secondary?: { label: string; onClick: () => void };
   onClose?: () => void;
   children?: ReactNode;
+  /** Replaces the floating art with a product illustration for the message (C-04 day modals). */
+  visual?: ReactNode;
   /** Extra block under the lead, in the left column (C-03 timeline). */
   aside?: ReactNode;
   footer?: ReactNode;
@@ -52,7 +54,7 @@ type Props = {
 const OPTION_NOTE: Record<ExchangeId, string> = { bitunix: 'Most members', pionex: 'Free trading bots' };
 
 export default function Paywall(props: Props) {
-  const { id, label, labelLocked, chip, tone = 'accent', art = 'gem', title, lead, sections = [], exchanges, primary, secondary, onClose, children, aside, footer, bottom, disclosure = false, variant = 'modal' } = props;
+  const { id, label, labelLocked, chip, tone = 'accent', art = 'gem', title, lead, sections = [], exchanges, primary, secondary, onClose, children, visual, aside, footer, bottom, disclosure = false, variant = 'modal' } = props;
   const [selected, setSelected] = useState<ExchangeId>('bitunix');
   const [pick, setPick] = useState<ExchangeId>('bitunix');
   const eu = useEU();
@@ -98,13 +100,13 @@ export default function Paywall(props: Props) {
 
       <div className={p.body}>
         <div className={p.pitch}>
-          <div className={p.art} aria-hidden>
+          {visual ? <div className={p.visual}>{visual}</div> : <div className={p.art} aria-hidden>
             <span className={`${p.spark} ${p.sparkA}`} />
             <span className={`${p.spark} ${p.sparkB}`} />
             {art === 'gem'
               ? <Image className={p.gem} src="/signup/rank/gem-rekrut.png" alt="" width={132} height={132} priority />
               : <Image className={p.forma} src="/signup/forma-3d.png" alt="" width={110} height={212} priority />}
-          </div>
+          </div>}
           <div className={p.head}>
             <h2 id={`${id}-title`} className={p.title}>{title}</h2>
             {lead && <p className={p.lead}><Lines text={lead} /></p>}
@@ -113,6 +115,8 @@ export default function Paywall(props: Props) {
         </div>
 
         <div className={p.decide}>
+          {/* Nov 20, 2026: the content sits centred above a fixed action block, so the button lands in the same place on every paywall. */}
+          <div className={p.decideTop}>
           {sections.map((s, i) => (
             <section key={i} className={p.section} aria-label={s.title}>
               {s.title && <h3 className={p.sectionTitle}>{s.title}</h3>}
@@ -146,13 +150,16 @@ export default function Paywall(props: Props) {
           )}
 
           {children}
+          </div>
 
           <div className={p.actions}>
             <button type="button" className={`${p.cta} ${exchanges ? `${p.ctaEx} ${selected === 'pionex' ? p.exPionex : p.exBitunix}` : ''}`} onClick={() => primary.onClick(selected)}>{primaryLabel}</button>
-            {secondary && <button type="button" className={p.secondary} onClick={secondary.onClick}>{secondary.label}</button>}
+            {/* One slot under the button for "Later", a note or links, so the button sits in the same place on every paywall. */}
+            <div className={p.after}>
+              {secondary && <button type="button" className={p.secondary} onClick={secondary.onClick}>{secondary.label}</button>}
+              {(footer || (eu && exchanges && disclosure)) && <div className={p.footer}>{footer}{eu && exchanges && disclosure && <Disclosure />}</div>}
+            </div>
           </div>
-          {footer && <div className={p.footer}>{footer}</div>}
-          {eu && exchanges && disclosure && <div className={p.footer}><Disclosure /></div>}
         </div>
       </div>
       {bottom && <div className={p.bottom}>{bottom}</div>}

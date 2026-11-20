@@ -40,17 +40,18 @@
 }
 
 /* Pitch left, decision right */
-.body { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 32px; align-items: center; }
-.pitch { display: flex; flex-direction: column; align-items: center; gap: 16px; text-align: center; }
-.decide { display: flex; flex-direction: column; gap: 12px; }
+.body { flex: 1; min-height: 0; display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 32px; align-items: stretch; }
+.pitch { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 16px; text-align: center; }
+.decide { display: flex; flex-direction: column; gap: 16px; }
+.decideTop { flex: 1; min-height: 0; display: flex; flex-direction: column; justify-content: flex-end; gap: 24px; }
 
-.art { position: relative; height: 120px; width: 100%; display: grid; place-items: center; }
-.gem { width: 120px; height: 120px; object-fit: contain; filter: drop-shadow(0 0 28px rgba(var(--glow), 0.45)); animation: float 6s ease-in-out infinite; }
-.forma { width: auto; height: 150px; object-fit: contain; mix-blend-mode: screen; animation: float 6s ease-in-out infinite;
+.art { position: relative; height: 176px; width: 100%; display: grid; place-items: center; }
+.gem { width: 172px; height: 172px; object-fit: contain; filter: drop-shadow(0 0 28px rgba(var(--glow), 0.45)); animation: float 6s ease-in-out infinite; }
+.forma { width: auto; height: 210px; object-fit: contain; mix-blend-mode: screen; animation: float 6s ease-in-out infinite;
   -webkit-mask-image: radial-gradient(closest-side, #000 55%, transparent 100%); mask-image: radial-gradient(closest-side, #000 55%, transparent 100%); }
 .spark { position: absolute; width: 20px; height: 20px; background: #eaf8ff; clip-path: polygon(50% 0, 61% 39%, 100% 50%, 61% 61%, 50% 100%, 39% 61%, 0 50%, 39% 39%); filter: drop-shadow(0 0 8px rgba(var(--glow), 0.9)); }
-.sparkA { top: 4px; left: calc(50% + 56px); }
-.sparkB { bottom: 14px; left: calc(50% - 78px); width: 12px; height: 12px; opacity: 0.8; }
+.sparkA { top: 6px; left: calc(50% + 78px); }
+.sparkB { bottom: 20px; left: calc(50% - 104px); width: 12px; height: 12px; opacity: 0.8; }
 @keyframes float { 50% { transform: translateY(-6px); } }
 @media (prefers-reduced-motion: reduce) { .gem, .forma { animation: none; } }
 
@@ -58,15 +59,14 @@
 .title { margin: 0; font-size: 28px; font-weight: 500; line-height: 1.2; letter-spacing: -0.01em; text-wrap: balance; }
 .lead { margin: 0; font-size: 15px; line-height: 1.5; color: var(--tx-fg-muted); text-wrap: pretty; }
 
-.section { display: flex; flex-direction: column; gap: 8px; }
-.sectionTitle { margin: 0; padding-left: 4px; font-size: 13px; font-weight: 500; color: var(--tx-fg-muted); }
-.list {
-  margin: 0; padding: 6px; list-style: none; display: flex; flex-direction: column; gap: 2px;
-  border-radius: 16px; background: rgba(255, 255, 255, 0.04); border: 1px solid rgba(255, 255, 255, 0.08);
-}
-.list li { display: flex; align-items: center; gap: 12px; padding: 6px; font-size: 14px; line-height: 1.4; }
-.tile { width: 32px; height: 32px; flex: none; display: grid; place-items: center; border-radius: 10px; background: rgba(116, 211, 251, 0.1); border: 1px solid rgba(116, 211, 251, 0.18); }
-.itemText { flex: 1; text-wrap: pretty; }
+.section { display: flex; flex-direction: column; gap: 12px; }
+.sectionTitle { margin: 0; font-size: 13px; font-weight: 500; color: var(--tx-fg-muted); }
+/* Nov 20, 2026: the list sits on the card itself, no box; bigger tiles and text so it weighs as much as the left column. */
+.list { margin: 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: 16px; }
+.list li { display: flex; align-items: center; gap: 14px; font-size: 16px; line-height: 1.4; }
+.tile { width: 40px; height: 40px; flex: none; display: grid; place-items: center; border-radius: 12px; background: rgba(116, 211, 251, 0.1); border: 1px solid rgba(116, 211, 251, 0.18); }
+.tile img { width: 20px; height: 20px; }
+.itemText { flex: 1; text-wrap: balance; }
 .itemMuted { color: var(--tx-fg-muted); }
 .itemMuted .tile { background: rgba(255, 255, 255, 0.05); border-color: rgba(255, 255, 255, 0.1); }
 
@@ -87,11 +87,12 @@
 .optionNote { font-size: 13px; color: var(--tx-fg-muted); }
 /* The shared A-07 tag (Tag in signup/parts), sitting on the card's top border. */
 .option .optionTag { top: -10px; right: 12px; background: color-mix(in srgb, var(--ex) 18%, #0b1018); color: var(--ex); box-shadow: 0 0 0 1px rgba(var(--ex-rgb), 0.35); }
-.bottom { display: flex; flex-wrap: wrap; justify-content: center; align-items: center; gap: 6px 10px; padding-top: 12px; border-top: 1px solid rgba(255, 255, 255, 0.08); font-size: 13px; color: var(--tx-fg-muted); }
+.bottom { box-sizing: border-box; min-height: 33px; display: flex; flex-wrap: wrap; justify-content: center; align-items: center; gap: 6px 10px; padding-top: 12px; border-top: 1px solid rgba(255, 255, 255, 0.08); font-size: 13px; color: var(--tx-fg-muted); }
 .bottom a { color: var(--tx-fg-soft); text-decoration: underline; text-underline-offset: 3px; }
 
 /* The product's standard button (signup .button): white, or the exchange colour when an exchange is picked. */
-.actions { display: flex; flex-direction: column; align-items: stretch; gap: 2px; }
+.actions { flex: none; display: flex; flex-direction: column; align-items: stretch; gap: 4px; }
+.after { min-height: 44px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; }
 .cta {
   width: 100%; height: 52px; display: flex; align-items: center; justify-content: center; padding: 6px; cursor: pointer;
   border: 1px solid var(--tx-button-border); border-radius: var(--tx-radius); background: #fff; color: #000;
@@ -103,9 +104,10 @@
 .cta:focus-visible { outline: 2px solid #fff; outline-offset: 3px; }
 .secondary { align-self: center; height: 40px; padding: 0 16px; border: 0; background: none; color: var(--tx-fg-soft); font: inherit; font-size: 15px; font-weight: 500; cursor: pointer; }
 .secondary:hover { color: var(--tx-fg); }
-.footer { display: flex; flex-direction: column; align-items: center; gap: 4px; font-size: 13px; line-height: 1.5; color: var(--tx-fg-muted); text-align: center; }
+.footer { flex: none; display: flex; flex-direction: column; align-items: center; gap: 4px; font-size: 13px; line-height: 1.5; color: var(--tx-fg-muted); text-align: center; }
 .footer a { color: var(--tx-fg-soft); text-decoration: underline; text-underline-offset: 3px; }
-.links { display: flex; gap: 10px; justify-content: center; }
+.links { display: flex; flex-wrap: wrap; gap: 4px 16px; justify-content: center; }
+.links > span[aria-hidden] { display: none; }
 
 /* C-03: the 7 days as a horizontal stepper (today → last free day → pause). */
 .stepper { width: 100%; margin: 4px 0 0; padding: 0; list-style: none; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); }
@@ -133,8 +135,8 @@
   .card { padding: 14px 16px 18px; }
   .body { grid-template-columns: 1fr; gap: 16px; }
   .spot, .curtain { width: 100%; }
-  .art { height: 96px; }
-  .gem { width: 96px; height: 96px; }
+  .art { height: 120px; }
+  .gem { width: 120px; height: 120px; }
   .forma { height: 120px; }
   .title { font-size: 24px; }
 }
@@ -144,3 +146,9 @@
 
 /* EU rules: an exchange EU residents can't open (MiCA). */
 .optionOff, .optionOff:hover { opacity: 0.45; cursor: not-allowed; background: rgba(255, 255, 255, 0.03); }
+
+/* C-04 day modals: a product illustration in place of the floating art */
+.visual { width: 100%; }
+
+/* Nov 20, 2026: every paywall is the same size on desktop, so the button sits in the same place on all of them. */
+@media (min-width: 761px) { .card { height: var(--pw-h, 520px); } }

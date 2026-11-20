@@ -85,6 +85,8 @@ export default function SignupOnExchange() {
   const steps = subSteps(ex.id, code);
   const allDone = steps.every((st) => done[st.key]);
   const left = steps.filter((st) => !done[st.key]).length;
+  /** The step people are on: the first one not done. Later ones stay a little dimmer until they get there. */
+  const firstOpen = steps.findIndex((st) => !done[st.key]);
 
   const toggle = (key: string) => {
     setDone((d) => {
@@ -102,7 +104,7 @@ export default function SignupOnExchange() {
         <div className={`${s.connectBody} ${s.connectWide}`}>
           <div className={s.connectIntro}>
             <h1 className={s.title}>Sign up on {ex.name}</h1>
-            <p className={s.lead}><Lines text={`Three short screens on ${ex.name}. Check that “${REGISTER_PRINT[ex.id].field}” shows ${code}. Tick each screen here when you’re done.`} /></p>
+            <p className={s.lead}><Lines text={`Three short screens on ${ex.name}. Check that “${REGISTER_PRINT[ex.id].field}” shows ${code}. Mark each screen as done here.`} /></p>
           </div>
 
           <div className={s.segmented} role="tablist" aria-label="Device">
@@ -115,7 +117,7 @@ export default function SignupOnExchange() {
 
           <ol className={`${s.subSteps} ${s.stepCols}`} style={{ '--cols': steps.length } as React.CSSProperties}>
             {steps.map((st, i) => (
-              <li key={st.key} className={`${s.subStep} ${done[st.key] ? s.subStepDone : ''}`}>
+              <li key={st.key} onClick={() => toggle(st.key)} className={`${s.subStep} ${s.subStepClickable} ${done[st.key] ? s.subStepDone : i === firstOpen ? s.subStepNow : i > firstOpen ? s.subStepLater : ''}`}>
                 <div className={s.subStepHead}>
                   <span className={s.flowStepNum}>{i + 1}</span>
                   <div>
@@ -132,10 +134,10 @@ export default function SignupOnExchange() {
                     </div>
                   )}
                   {st.shot && device === 'phone' && !st.shot.mobile && <p className={s.hint}>It looks the same on your phone.</p>}
-                  <label className={s.checkRow}>
-                    <input type="checkbox" checked={!!done[st.key]} onChange={() => toggle(st.key)} />
+                  <button type="button" className={`${s.doneBtn} ${done[st.key] ? s.doneBtnOn : ''}`} aria-pressed={!!done[st.key]} onClick={(e) => { e.stopPropagation(); toggle(st.key); }}>
+                    <span className={s.doneMark} aria-hidden><svg viewBox="0 0 16 16" width="12" height="12"><path d="M3.5 8.5l3 3 6-7" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" /></svg></span>
                     <span>{st.check}</span>
-                  </label>
+                  </button>
                 </div>
               </li>
             ))}
@@ -143,7 +145,7 @@ export default function SignupOnExchange() {
         </div>
       </div>
 
-      <ConnectCta note={allDone ? 'Next: verify your identity.' : `Tick the ${left} remaining step${left === 1 ? '' : 's'} to continue.`}>
+      <ConnectCta note={allDone ? 'Next: verify your identity.' : `Mark the ${left} remaining step${left === 1 ? '' : 's'} as done to continue.`}>
         <PrimaryButton onClick={() => router.push(`/connect/kyc?exchange=${ex.id}`)} disabled={!allDone}>I’ve signed up on {ex.name}</PrimaryButton>
       </ConnectCta>
 

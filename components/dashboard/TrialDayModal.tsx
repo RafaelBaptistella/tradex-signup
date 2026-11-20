@@ -12,6 +12,7 @@ import Paywall, { type PaywallSection } from '@/components/paywall/Paywall';
 import type { ExchangeId } from '@/lib/exchanges';
 import { TRIAL_DAYS } from '@/components/signup/VerifyEmail';
 import p from '@/components/paywall/paywall.module.css';
+import TrialVisual from './TrialVisuals';
 
 export const DAY_MODAL_KEY = 'tx_daymodal_seen_';
 
@@ -22,16 +23,14 @@ type Day = {
 };
 
 const OPEN: PaywallSection = { title: 'Open during your trial', items: [
-  { icon: 'education', text: 'Courses · Level 1 and 2', state: 'open' },
-  { icon: 'forum', text: 'Community and Discord', state: 'open' },
-  { icon: 'chart-candlestick', text: 'Analyses, events and journal', state: 'open' }
+  { icon: 'education', text: 'Courses Level 1 and 2', state: 'open' },
+  { icon: 'forum', text: 'Community, Discord and analyses', state: 'open' }
 ] };
 const UNLOCKS: PaywallSection = { title: 'Unlocks with an exchange', items: [
-  { icon: 'trophy', text: 'Monthly rewards for top traders', state: 'locked' },
-  { icon: 'skill-level', text: 'Ranks and leaderboards', state: 'locked' },
+  { icon: 'trophy', text: 'Rewards, ranks and leaderboards', state: 'locked' },
   { icon: 'education', text: 'Advanced courses, Level 3 and up', state: 'locked' }
 ] };
-const CONNECT_GETS: PaywallSection = { items: [
+const CONNECT_GETS: PaywallSection = { title: 'Unlocks when you connect', items: [
   { icon: 'trophy', text: 'A spot on the monthly leaderboard' },
   { icon: 'skill-level', text: 'Ranks from Rekrut up, with rewards at each rank' },
   { icon: 'education', text: 'Advanced courses, Level 3 and up' }
@@ -43,24 +42,23 @@ export const DAYS: Record<number, Day> = {
     sections: [OPEN, UNLOCKS], primary: 'Start exploring', action: 'close', secondary: { label: 'Connect an exchange now', action: 'connect' } },
   2: { label: 'Free trial', art: 'forma', title: 'Start with the beginner course',
     lead: 'Level 1 covers the basics of trading, step by step. What you learn now stays yours.',
-    sections: [{ items: [
+    // Nov 20, 2026: like day 1, what's open now and what stays locked.
+    sections: [{ title: 'Your benefits', items: [
       { icon: 'education', text: 'Level 1 and 2 are open during your trial' },
-      { icon: 'timer', text: 'Short lessons you can pause any time' },
-      { icon: 'forum', text: 'Questions? The coaches answer on Discord' }
-    ] }], primary: 'Start the beginner course', action: 'first_course', secondary: { label: 'Later', action: 'close' } },
+      { icon: 'timer', text: 'Short lessons you can pause any time' }
+    ] }, UNLOCKS], primary: 'Start the beginner course', action: 'first_course', secondary: { label: 'Later', action: 'close' } },
   3: { label: 'Free trial', art: 'forma', title: 'Trade live with the community today',
     lead: 'The coaches trade live on Discord every day. Join and follow along.',
-    sections: [{ items: [
+    sections: [{ title: 'Your benefits', items: [
       { icon: 'forum', text: 'Daily live trading with the coaches' },
-      { icon: 'data-view', text: 'See how other members read the market' },
       { icon: 'chart-candlestick', text: 'This week’s market analysis is open too' }
-    ] }], primary: 'Join the Discord', action: 'join_discord', secondary: { label: 'Later', action: 'close' } },
+    ] }, UNLOCKS], primary: 'Join the Discord', action: 'join_discord', secondary: { label: 'Later', action: 'close' } },
   4: { canvas: 3, label: 'Free trial', art: 'gem', title: 'You’re halfway through your free trial',
     lead: 'Connect now and everything stays open after day 7.',
     sections: [CONNECT_GETS], exchanges: true, primary: (n) => `Connect ${n}`, action: 'connect', secondary: { label: 'Keep exploring', action: 'close' } },
   5: { label: 'Free trial', art: 'gem', title: 'See what this month’s top traders share',
     lead: 'Each month, the traders with the most volume share these prize pools. Connect to join them.',
-    sections: [{ items: [
+    sections: [{ title: 'How it works', items: [
       { icon: 'chart-candlestick', text: 'Every trade on your exchange adds to your volume' },
       { icon: 'trophy', text: 'The top traders of the month share the pool' },
       { icon: 'currency-euro', text: 'TradeX stays free. No extra fees.' }
@@ -70,7 +68,7 @@ export const DAYS: Record<number, Day> = {
     sections: [CONNECT_GETS], exchanges: true, primary: (n) => `Connect ${n}`, action: 'connect', secondary: { label: 'Remind me later', action: 'close' } },
   7: { canvas: 6, label: 'Last day of your free trial', art: 'gem', title: 'Your access pauses tomorrow',
     lead: 'Connect an exchange today and nothing pauses. It takes about 10 minutes.',
-    sections: [{ items: [
+    sections: [{ title: 'If you connect today', items: [
       { icon: 'education', text: 'Courses Level 1 and 2 stay open' },
       { icon: 'forum', text: 'The community and Discord stay open' },
       { icon: 'trophy', text: 'The leaderboard and ranks unlock' }
@@ -101,6 +99,8 @@ export default function TrialDayModal({ day, start, onConnect, onItem, onClose }
       primary={{ label: c.primary, onClick: (ex) => run(c.action, ex) }}
       secondary={c.secondary && { label: c.secondary.label, onClick: () => run(c.secondary!.action) }}
       onClose={onClose}
+      // Day 1 (the C-03 welcome) keeps the floating gem; days 2 to 7 show the product behind their message.
+      visual={day === 1 ? undefined : <TrialVisual day={day} start={start} />}
       aside={day === 1 && start !== null ? (
         // C-03: the 7 days as a stepper, read left to right at a glance.
         <ol className={p.stepper} aria-label="Your 7 days">

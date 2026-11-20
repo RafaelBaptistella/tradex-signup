@@ -111,8 +111,10 @@ export const EXTRAS: { group: string; screens: Screen[] }[] = [
   {
     group: 'New feature (wireframe)',
     screens: [
-      { id: 'ADV', title: 'Advent Calendar · sponsored by Kraken', path: '/advent', note: 'Sidebar → Advent Calendar' },
-      { id: 'ADV', title: 'Advent Calendar · Kraken connected, ticket taken', path: '/advent?kraken=1&ticket=1' }
+      { id: 'ADV', title: 'Advent Calendar · sponsored by Kraken', path: '/advent', note: 'Sidebar → Advent Calendar event card',
+        variants: [{ label: 'V1 · Bento', path: '/advent' }, { label: 'V2 · Equal cards', path: '/advent?layout=grid' }, { label: 'V3 · Carousel', path: '/advent?layout=carousel' }, { label: 'Stream off air', path: '/advent?live=0' }] },
+      { id: 'ADV', title: 'Advent Calendar · Kraken connected, ticket taken', path: '/advent?kraken=1&ticket=1',
+        variants: [{ label: 'V1 · Bento', path: '/advent?kraken=1&ticket=1' }, { label: 'V2 · Equal cards', path: '/advent?kraken=1&ticket=1&layout=grid' }, { label: 'V3 · Carousel', path: '/advent?kraken=1&ticket=1&layout=carousel' }] }
     ]
   },
   {
